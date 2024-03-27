@@ -3,10 +3,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from django.contrib.auth.models import User
-from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
 
+
+
+@api_view(['GET'])
+def view_something(request):
+    return Response({'message':'hell world fkok'})
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
