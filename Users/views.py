@@ -7,6 +7,24 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
 from .serializers import CustomerSerializer
 from .models import Customer
+from rest_framework import mixins
+from rest_framework import generics
+
+class CustomerView(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    generics.GenericAPIView):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
 @api_view(['GET'])

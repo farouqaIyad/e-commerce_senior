@@ -38,7 +38,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = '__all__'  
+        fields = ['first_name','last_name','email','password'] 
 
     def create(self, validated_data):
         validated_data['password'] = self.validate_password(validated_data['password'])
