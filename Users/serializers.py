@@ -1,71 +1,24 @@
-from rest_framework import serializers
-from django.contrib.auth.hashers import make_password 
 from django.contrib.auth.password_validation import validate_password 
-from .models import Admin,Supplier,Customer,Driver,CustomerSupporter
+from django.contrib.auth.hashers import make_password 
+from rest_framework import serializers
+from .models import User
 
-class AdminSerializer(serializers.ModelSerializer):
-    
+class UserSerializer(serializers.ModelSerializer):
+
     def validate_password(self, value):
-        validate_password(value)  
-        return make_password(value)  
-
-    class Meta:
-        model = Admin
-        fields = '__all__'  
+        # Validate password using Django's built-in password validation
+        validate_password(value)
+        return value
 
     def create(self, validated_data):
-        validated_data['password'] = self.validate_password(validated_data['password'])
+        # Hash the password before saving
+        validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
 
-class SupplierSerializer(serializers.ModelSerializer):
-
-    def validate_password(self, value):
-        validate_password(value)  
-        return make_password(value)  
-
     class Meta:
-        model = Supplier
-        fields = '__all__'  
+        model = User
+        fields = ['email', 'first_name', 'last_name']
 
-    def create(self, validated_data):
-        validated_data['password'] = self.validate_password(validated_data['password'])
-        return super().create(validated_data) 
+    
 
-class CustomerSerializer(serializers.ModelSerializer):
-    def validate_password(self, value):
-        validate_password(value)  
-        return make_password(value)  
-
-    class Meta:
-        model = Customer
-        fields = ['first_name','last_name','email','password'] 
-
-    def create(self, validated_data):
-        validated_data['password'] = self.validate_password(validated_data['password'])
-        return super().create(validated_data)         
-
-class DriverSerializer(serializers.ModelSerializer):
-    def validate_password(self, value):
-        validate_password(value)  
-        return make_password(value)  
-
-    class Meta:
-        model = Driver
-        fields = '__all__'  
-
-    def create(self, validated_data):
-        validated_data['password'] = self.validate_password(validated_data['password'])
-        return super().create(validated_data) 
-
-class CustomerSupporterSerializer(serializers.ModelSerializer):
-    def validate_password(self, value):
-        validate_password(value)  
-        return make_password(value)  
-
-    class Meta:
-        model = CustomerSupporter
-        fields = '__all__'  
-
-    def create(self, validated_data):
-        validated_data['password'] = self.validate_password(validated_data['password'])
-        return super().create(validated_data)   
+    

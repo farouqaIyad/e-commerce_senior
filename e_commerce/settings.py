@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'Users.User'
 
 # Application definition
 
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     "Users.apps.UsersConfig",
     "catalog.apps.CatalogConfig",
     "rest_framework",
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +55,15 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "e_commerce.urls"
+
+REST_FRAMEWORK = {
+    
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+    
+}
 
 TEMPLATES = [
     {
@@ -79,7 +90,7 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'e-commerces',
+        'NAME': 'e-commerce',
         'USER':'root',
         'PASSWORD':'FarOuQ_2022',
         'HOST':'localhost',
