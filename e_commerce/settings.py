@@ -38,10 +38,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "Users.apps.UsersConfig",
-    "catalog.apps.CatalogConfig",
     "rest_framework",
     'rest_framework_simplejwt',
+    "Users.apps.UsersConfig",
+    "catalog.apps.CatalogConfig",
+    "user_feedback.apps.UserFeedbackConfig"
 ]
 
 MIDDLEWARE = [
@@ -90,7 +91,7 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'e-commerce',
+        'NAME': 'e-com',
         'USER':'root',
         'PASSWORD':'FarOuQ_2022',
         'HOST':'localhost',
@@ -110,8 +111,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
 ]
-
-
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=100),  # Change minutes to your desired value
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # Optional: Change refresh token lifetime
+}
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 

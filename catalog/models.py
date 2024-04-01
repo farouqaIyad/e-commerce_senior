@@ -3,12 +3,12 @@ from django.db import models
 from Users.models import User
 
 class Category(models.Model):
-    name = models.CharField(max_length=255, unique=True),
+    name = models.CharField(max_length=255,blank = True)
     class Meta:
         db_table = 'category'
 
 class SubCategory(models.Model):
-    name = models.CharField(max_length=255, unique=True),
+    name = models.CharField(max_length=255,blank = True)
     slug = models.SlugField(max_length=255, unique=True)
     category = models.ForeignKey(Category,on_delete=models.CASCADE)
     #now i could do category.subcategory.all()
@@ -17,17 +17,18 @@ class SubCategory(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=255, unique=True) 
+    name = models.CharField(max_length=255,blank = True) 
     slug = models.SlugField(max_length=255, unique=True,  
     help_text='Unique value for product page URL, created from name.') 
-    price = models.DecimalField(max_digits=9,decimal_places=0)
+    price = models.IntegerField()
     quantity_in_stock = models.IntegerField()
     description = models.TextField()
     date_created = models.DateTimeField(default = timezone.now)
-    times_bought = models.IntegerField()
+    times_bought = models.IntegerField(default = 0)
     category = models.ForeignKey(Category,on_delete = models.CASCADE)
-    sub_category = models.ManyToManyField(SubCategory)
     supplier = models.ForeignKey(User,on_delete = models.CASCADE)
+    sub_category = models.ManyToManyField(SubCategory)
+
     #some of the relationships will be with review and supplier and categories and 
     #rating = whatever
 

@@ -2,19 +2,23 @@ from .serializers import ProductSerializer,CategorySerializer,SubCategorySeriali
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.response import Response
+from .models import Category,SubCategory
 from django.db import transaction
 from rest_framework import status
-
+from .utils import save_and_return_response
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_product(request):
-    serializer = ProductSerializer(data=request.data,context = {'request':request})
+    category = Category.objects.get(id = request.data['category'])
+    subcategory_id = request.data['sub_category']
+    serializer = ProductSerializer(data=request.data,context = {'supplier':request.user,'category':category})
     if serializer.is_valid():
         with transaction.atomic():
-            serializer.save()
+            product = serializer.save()
+            product.sub_category.set(subcategory_id)
             return Response(serializer.data,status=status.HTTP_201_CREATED)
-    return Response({"message":serializer.erros},status=status.HTTP_400_BAD_REQUEST)
+    return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -24,7 +28,7 @@ def add_category(request):
         with transaction.atomic():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
-    return Response(serializer.erros,status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -34,5 +38,5 @@ def add_subcategory(request):
         with transaction.atomic():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
-    return Response(serializer.erros,status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 

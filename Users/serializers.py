@@ -7,7 +7,6 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     def validate_password(self, value):
-        # Validate password using Django's built-in password validation
         validate_password(value)
         return value
 
