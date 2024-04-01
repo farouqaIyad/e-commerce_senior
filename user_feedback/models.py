@@ -1,12 +1,12 @@
-from django.db import models
-from Users.models import User
 from catalog.models import Product
 from django.utils import timezone
+from Users.models import User
+from django.db import models
 
 class Review(models.Model):
     customer = models.ForeignKey(User,on_delete = models.CASCADE)
     product = models.ForeignKey(Product,on_delete = models.CASCADE)
-    rating = models.IntegerField()
+    rating = models.IntegerField(blank=False,default=0)
     comment = models.TextField()
     date_created = models.DateTimeField(default = timezone.now)
 

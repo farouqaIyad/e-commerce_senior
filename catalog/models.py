@@ -14,6 +14,8 @@ class SubCategory(models.Model):
     class Meta:
         db_table = 'subcategory'
 
+class ProductImage(models.Model):
+    pass
 
 class Product(models.Model):
     product_name = models.CharField(max_length=255,unique=True) 
