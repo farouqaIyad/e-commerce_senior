@@ -2,7 +2,7 @@ from .serializers import ProductSerializer,CategorySerializer,SubCategorySeriali
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.response import Response
-from .models import Category,SubCategory
+from .models import Category,SubCategory,Product
 from django.db import transaction
 from rest_framework import status
 from .utils import save_and_return_response
@@ -20,6 +20,18 @@ def add_product(request):
             return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(["get"])
+@permission_classes([IsAuthenticated])
+def view_product(request,pk):
+    product = Product.objects.get(id = pk)
+    serializer = ProductSerializer(instance=product)
+    return Response(serializer.data)
+    
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def view_products(request):
+    pass
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_category(request):
@@ -33,7 +45,8 @@ def add_category(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_subcategory(request):
-    serializer = SubCategorySerializer(data=request.data)
+    category = Category.objects.get(id = request.data['category'])
+    serializer = SubCategorySerializer(data=request.data,context = {'category':category})
     if serializer.is_valid():
         with transaction.atomic():
             serializer.save()

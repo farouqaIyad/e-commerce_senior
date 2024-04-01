@@ -3,13 +3,12 @@ from django.db import models
 from Users.models import User
 
 class Category(models.Model):
-    name = models.CharField(max_length=255,blank = True)
+    category_name = models.CharField(max_length=255,unique = True)
     class Meta:
         db_table = 'category'
 
 class SubCategory(models.Model):
-    name = models.CharField(max_length=255,blank = True)
-    slug = models.SlugField(max_length=255, unique=True)
+    sub_category_name = models.CharField(max_length=255,unique = True)
     category = models.ForeignKey(Category,on_delete=models.CASCADE)
     #now i could do category.subcategory.all()
     class Meta:
@@ -17,9 +16,7 @@ class SubCategory(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=255,blank = True) 
-    slug = models.SlugField(max_length=255, unique=True,  
-    help_text='Unique value for product page URL, created from name.') 
+    product_name = models.CharField(max_length=255,unique=True) 
     price = models.IntegerField()
     quantity_in_stock = models.IntegerField()
     description = models.TextField()
@@ -28,7 +25,6 @@ class Product(models.Model):
     category = models.ForeignKey(Category,on_delete = models.CASCADE)
     supplier = models.ForeignKey(User,on_delete = models.CASCADE)
     sub_category = models.ManyToManyField(SubCategory)
-
     #some of the relationships will be with review and supplier and categories and 
     #rating = whatever
 
