@@ -21,6 +21,7 @@ class ProductList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ProductDetail(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -40,26 +41,7 @@ class ProductDetail(APIView):
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)   
 
-class CategoryDetail(APIView):
-    permission_classes = [IsAuthenticated]
-  
-    def get_object(self, pk):
-        try:
-            return Pr.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            raise Http404
 
-    def get(self, request, pk, format=None):
-        category = self.get_object(pk)
-        products = category.products.all()
-        serializer = ProductsSerializer(products,many = True)
-        return Response(serializer.data)
-        
-
-    def delete(self, request, pk, format=None):
-        category = self.get_object(pk)
-        category.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CategoryList(APIView):
     permission_classes = [IsAuthenticated]
@@ -76,6 +58,7 @@ class CategoryList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CategoryDetail(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -87,7 +70,7 @@ class CategoryDetail(APIView):
 
     def get(self, request, pk, format=None):
         category = self.get_object(pk)
-        products = category.products.all()
+        products = category.product_set.all()
         serializer = ProductsSerializer(products,many = True)
         return Response(serializer.data)
 
@@ -95,22 +78,24 @@ class CategoryDetail(APIView):
         category = self.get_object(pk)
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+
 class SubCategoryList(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, format=None):
         subcategory = SubCategory.objects.all()
-        serializer = CategorySerializer(subcategory, many=True)
+        serializer = SubCategorySerializer(subcategory, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = CategorySerializer(data=request.data)
+        serializer = SubCategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class SubCategoryDetail(APIView):
     permission_classes = [IsAuthenticated]
    
@@ -122,7 +107,7 @@ class SubCategoryDetail(APIView):
 
     def get(self, request, pk, format=None):
         subcategory = self.get_object(pk)
-        products = subcategory.products.all()
+        products = subcategory.product_set.all()
         serializer = ProductsSerializer(products,many = True)
         return Response(serializer.data)
     
@@ -130,8 +115,3 @@ class SubCategoryDetail(APIView):
         subcategory = self.get_object(pk)
         subcategory.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-
-    
-
-

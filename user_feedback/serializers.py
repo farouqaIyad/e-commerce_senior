@@ -6,8 +6,8 @@ from django.db import models
 
 
 class ReviewSerializer(serializers.Serializer):
-    product = models.ForeignKey(Product,on_delete=True)
-    customer = models.ForeignKey(Customer,on_delete=True)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    customer = models.ForeignKey(User,on_delete=models.CASCADE)
 
     def create(self,validated_data):
         validated_data['product'] = self.context.get('product')
@@ -16,12 +16,17 @@ class ReviewSerializer(serializers.Serializer):
 
     class Meta:
         db_table = 'review'
-        fields = ['rating', 'comment', 'product']
+        fields = ['rating', 'comment'
+                  ]
 
 class ComplaintsSerializer(serializers.Serializer):
-    customer = models.ForeignKey(User,on_delete=True)
+    customer = models.ForeignKey(User,on_delete=models.CASCADE)
+    #order = models.ForeignKey(Order,on_delete = models.CASCADE)
 
     def create(self,validated_data):
+        validated_data['customer'] = self.context.get('customer')
+        validated_data['order'] = self.context.get('order')
+
         return super().create(validated_data)
     class Meta:
         db_table = 'complaints'
