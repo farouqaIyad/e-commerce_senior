@@ -3,9 +3,11 @@ from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from .utils import extract_from_serializer
-from .serializers import UserSerializer
+from rest_framework.views import APIView
+from .serializers import UserSerializer,AddressSerializer
 from django.db import transaction
 from rest_framework import status
+from django.http import Http404
 from .models import User
 
 
@@ -86,6 +88,17 @@ def delete_account(request):
         print(user)
         return Response({"message":"{}".format(request.user.id)})
 
+class AddressList(APIView):
+    permission_classes = [IsAuthenticated]
 
-
-
+    def post(self, request, format=None):
+        serializer = AddressSerializer(data=request.data,context = {'customer':request.user})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self,request,format=None):
+        user = request.user
+        serializer = AddressSerializer(instance=user.address_set.all(),many = True)
+        return Response(serializer.data)

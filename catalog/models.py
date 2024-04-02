@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.db import models
 from Users.models import User
 
+
 class Category(models.Model):
     category_name = models.CharField(max_length=255,unique = True)
     class Meta:
@@ -27,6 +28,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category,on_delete = models.CASCADE)
     supplier = models.ForeignKey(User,on_delete = models.CASCADE)
     sub_category = models.ManyToManyField(SubCategory)
+    
     #some of the relationships will be with review and supplier and categories and 
     #rating = whatever
 

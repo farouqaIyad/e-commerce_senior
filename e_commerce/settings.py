@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     "Users.apps.UsersConfig",
     "catalog.apps.CatalogConfig",
-    "user_feedback.apps.UserFeedbackConfig"
+    "user_feedback.apps.UserFeedbackConfig",
 ]
 
 MIDDLEWARE = [
