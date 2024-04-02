@@ -6,6 +6,8 @@ urlpatterns = [
     path('Users/', include('Users.urls')),
     path('catalog/', include('catalog.urls')),
     path('user_feedback/', include('user_feedback.urls')),
+    path('', include('shoppingcart_and_order.urls')),
+
 
 
 ]
