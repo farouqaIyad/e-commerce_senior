@@ -12,9 +12,9 @@ from django.http import Http404
 class ProductList(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format=None):
+    def post(self, request, format = None):
         category = Category.objects.get(id = request.data['category'])
-        serializer = ProductDetailSerializer(data=request.data,context = {'supplier':request.user,'category':category})
+        serializer = ProductDetailSerializer(data = request.data, context = {'supplier':request.user, 'category':category})
         if serializer.is_valid():
             product = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -26,35 +26,35 @@ class ProductDetail(APIView):
     
     def get_object(self, pk):
         try:
-            return Product.objects.get(pk=pk)
+            return Product.objects.get(pk = pk)
         except Product.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
+    def get(self, request, pk, format = None):
         product = Product.objects.get(id = pk)
-        serializer = ProductDetailSerializer(instance=product)
+        serializer = ProductDetailSerializer(instance = product)
         return Response(serializer.data)
 
-    def delete(self, request, pk, format=None):
+    def delete(self, request, pk, format = None):
         product = self.get_object(pk)
         product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)   
+        return Response(status = status.HTTP_204_NO_CONTENT)   
 
 
 class CategoryList(APIView):
     permission_classes = [IsAuthenticated]
     
-    def get(self, request, format=None):
+    def get(self, request, format = None):
         category = Category.objects.all()
         serializer = CategorySerializer(category, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        serializer = CategorySerializer(data=request.data)
+    def post(self, request, format = None):
+        serializer = CategorySerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 
 class CategoryDetail(APIView):
@@ -62,20 +62,20 @@ class CategoryDetail(APIView):
     
     def get_object(self, pk):
         try:
-            return Category.objects.get(pk=pk)
+            return Category.objects.get(pk = pk)
         except Category.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
         category = self.get_object(pk)
         subcategories = category.subcategory_set.all()
-        serializer = SubCategorySerializer(subcategories,many = True)
+        serializer = SubCategorySerializer(subcategories, many = True)
         return Response(serializer.data)
 
     def delete(self, request, pk, format=None):
         category = self.get_object(pk)
         category.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status = status.HTTP_204_NO_CONTENT)
 
 
 class SubCategoryList(APIView):
@@ -83,11 +83,11 @@ class SubCategoryList(APIView):
 
     def post(self, request, format=None):
         category = Category.objects.get(pk = request.data['category'])
-        serializer = SubCategorySerializer(data=request.data,context = {'category':category})
+        serializer = SubCategorySerializer(data = request.data, context = {'category':category})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 
 class SubCategoryDetail(APIView):
@@ -102,10 +102,10 @@ class SubCategoryDetail(APIView):
     def get(self, request, pk, format=None):
         subcategory = self.get_object(pk)
         products = subcategory.product_set.all()
-        serializer = ProductSerializer(products,many = True)
+        serializer = ProductSerializer(products, many = True)
         return Response(serializer.data)
     
     def delete(self, request, pk, format=None):
         subcategory = self.get_object(pk)
         subcategory.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status = status.HTTP_204_NO_CONTENT)

@@ -14,7 +14,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
-    category = models.ForeignKey(Category,on_delete =models.CASCADE)
+    category = models.ForeignKey(Category, on_delete = models.CASCADE)
     
     def create(self,validated_data):
         validated_data['category'] = self.context.get('category')
@@ -38,17 +38,17 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['product_name','price','average_rating','reviews_count']
+        fields = ['product_name', 'price', 'average_rating', 'reviews_count']
 
 class ProductDetailSerializer(ProductSerializer):
-    supplier = models.ForeignKey(User,on_delete = models.CASCADE)
-    category = models.ForeignKey(Category,on_delete = models.CASCADE)
+    supplier = models.ForeignKey(User, on_delete = models.CASCADE)
+    category = models.ForeignKey(Category, on_delete = models.CASCADE)
     sub_category = models.ManyToManyField(SubCategory)  
     reviews = serializers.SerializerMethodField()
     
     def get_reviews(self,obj):
         reviews = obj.review_set.all()
-        serializer = ReviewSerializer(reviews,many = True)
+        serializer = ReviewSerializer(reviews, many = True)
         return serializer.data
 
     def create(self,validated_data):
@@ -58,12 +58,12 @@ class ProductDetailSerializer(ProductSerializer):
 
         sub_category_data = validated_data.pop('sub_category', [])
         for sub_category_id in sub_category_data:
-            sub_category, created = SubCategory.objects.get_or_create(pk=sub_category_id)
+            sub_category, created = SubCategory.objects.get_or_create(pk = sub_category_id)
             product.sub_category.add(sub_category)
         return product
         
     class Meta:
         model = Product
-        fields = ['product_name','price','description','quantity_in_stock','category','sub_category','reviews','average_rating','reviews_count']
+        fields = ['product_name', 'price', 'description', 'quantity_in_stock', 'category', 'sub_category', 'reviews', 'average_rating','reviews_count']
 
 

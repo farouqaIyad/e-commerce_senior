@@ -18,17 +18,16 @@ class ProductImage(models.Model):
     pass
 
 class Product(models.Model):
-    product_name = models.CharField(max_length=255,unique=True) 
+    product_name = models.CharField(max_length = 255, unique=True) 
     price = models.IntegerField()
     quantity_in_stock = models.IntegerField()
     description = models.TextField()
     date_created = models.DateTimeField(default = timezone.now)
     times_bought = models.IntegerField(default = 0)
-    category = models.ForeignKey(Category,on_delete = models.CASCADE)
-    supplier = models.ForeignKey(User,on_delete = models.CASCADE)
+    category = models.ForeignKey(Category, on_delete = models.CASCADE)
+    supplier = models.ForeignKey(User, on_delete = models.CASCADE)
     sub_category = models.ManyToManyField(SubCategory)
     
-
     class Meta: 
         db_table = 'product' 
         ordering = ['-date_created'] 

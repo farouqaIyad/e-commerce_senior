@@ -9,23 +9,22 @@ class ShoppingCart(models.Model):
     customer = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     product = models.ManyToManyField(Product, blank=True)
 
-    
     class Meta:
         db_table = 'shoppingcart'
 
 @receiver(post_save, sender=User)
 def create_shopping_cart(sender, instance, created, **kwargs):
     if created:  
-        ShoppingCart.objects.create(customer=instance)
+        ShoppingCart.objects.create(customer = instance)
 
 class Order(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ManyToManyField(Product)
     date_created = models.DateTimeField(default=timezone.now)
     date_deliverd = models.DateTimeField(blank=True,null = True)
-    order_status_type = (('Preprocessing','Preprocessing'),('Awaiting Pickup','Awaiting Pickup'),
-                         ('Picked up','Picked up'),('Deliverd','Deliverd'),('Cancelled','Cancelled'))
-    order_status = models.CharField(max_length=30,choices=order_status_type)
+    order_status_type = (('Preprocessing', 'Preprocessing'), ('Awaiting Pickup', 'Awaiting Pickup'),
+                         ('Picked up', 'Picked up'), ('Deliverd', 'Deliverd'), ('Cancelled', 'Cancelled'))
+    order_status = models.CharField(max_length=30, choices=order_status_type)
 
     class Meta:
         db_table = 'order'
