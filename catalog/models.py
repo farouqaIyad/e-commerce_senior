@@ -3,14 +3,15 @@ from django.db import models
 from Users.models import User
 
 class Category(models.Model):
-    category_name = models.CharField(max_length=255,unique = True)
+    category_name = models.CharField(max_length = 255, unique = True)
+
     class Meta:
         db_table = 'category'
 
 class SubCategory(models.Model):
-    sub_category_name = models.CharField(max_length=255,unique = True)
-    category = models.ForeignKey(Category,on_delete=models.CASCADE)
-    #now i could do category.subcategory.all()
+    sub_category_name = models.CharField(max_length = 255, unique = True)
+    category = models.ForeignKey(Category, on_delete = models.CASCADE)
+
     class Meta:
         db_table = 'subcategory'
 

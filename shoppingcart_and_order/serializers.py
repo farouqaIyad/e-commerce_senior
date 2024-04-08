@@ -1,10 +1,7 @@
-from catalog.serializers import ProductSerializer
+from catalog.serializers import ProductSerializer,Product
 from rest_framework import serializers
-from catalog.models import Product
 from .models import ShoppingCart, Order
-from Users.models import User
-from django.db import models
-
+from address.serializers import AddressSerializer
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField()
@@ -16,8 +13,11 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         return serializer.data
     
     def get_total_cost(self,obj):
-        prices = obj.product.all()
-        return prices
+        products = obj.product.all()
+        total_cost = 0
+        for product in products:
+            total_cost+=product.price
+        return total_cost
 
     class Meta:
         model = ShoppingCart
@@ -25,13 +25,14 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(ShoppingCartSerializer):
+    address = serializers.SerializerMethodField()
+
+    def get_address(self,obj):
+        address = obj.order_address
+        serializer = AddressSerializer(instance=address)
+        return serializer.data
     
     class Meta:
         model = Order
-        fields = ['products', 'date_created', 'date_deliverd', 'order_status']
+        fields = ['products', 'date_created', 'date_deliverd', 'order_status','address','total_cost']
         read_only_fields = ('date_created', 'date_deliverd', 'order_status')
-
-
-
-
-

@@ -1,7 +1,7 @@
 from django.contrib.auth.password_validation import validate_password 
 from django.contrib.auth.hashers import make_password 
 from rest_framework import serializers
-from .models import User,Address
+from .models import User
 from django.db import models
 
 
@@ -21,16 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password', 'first_name', 'last_name']
 
-class AddressSerializer(serializers.ModelSerializer):
-    customer = models.ForeignKey(User,on_delete = models.CASCADE)
-    
-    def create(self,validated_data):
-        validated_data['customer'] = self.context.get('customer')
-        return super().create(validated_data)
-
-    class Meta:
-        model = Address
-        fields = ['address_name', 'city','district','details','phone_number',]
 
     
 

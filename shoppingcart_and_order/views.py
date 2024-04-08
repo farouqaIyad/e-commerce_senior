@@ -6,6 +6,7 @@ from django.shortcuts import render
 from rest_framework import status
 from django.http import Http404
 from .models import Order
+from address.models import Address
 
 
 class ShoppingCartList(APIView):
@@ -17,7 +18,7 @@ class ShoppingCartList(APIView):
         except Product.DoesNotExist:
             raise Http404
 
-    def post(self,request,format = None):
+    def post(self, request, format = None):
         user_shoppingcart = request.user.shoppingcart
         product = self.get_object(request.data['product'])  
         user_shoppingcart.product.add(product)    
@@ -29,20 +30,28 @@ class ShoppingCartList(APIView):
         serializer = ShoppingCartSerializer(instance=user_shoppingcart)
         return Response(serializer.data)
     
+
 class OrderList(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get_object(self, pk):
+        try:
+            return Address.objects.get(pk=pk)
+        except Address.DoesNotExist:
+            raise Http404
+
     def post(self,request,format = None):
         user_shoppingcart = request.user.shoppingcart
-        order = Order.objects.create(customer = request.user)
+        address = self.get_object(pk = request.data['address_id'])
+        order = Order.objects.create(customer = request.user, order_address = address )
         order.product.add(*user_shoppingcart.product.all())
         order.save()
         return Response({"message":"order created"})
     
     def get(self,request,format = None):
         order = request.user.order_set.all()
-        serializer = OrderSerializer(instance=order,many = True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        serializer = OrderSerializer(instance = order, many = True)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
 
 

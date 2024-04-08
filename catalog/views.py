@@ -95,17 +95,17 @@ class SubCategoryDetail(APIView):
    
     def get_object(self, pk):
         try:
-            return SubCategory.objects.get(pk=pk)
+            return SubCategory.objects.get(pk = pk)
         except SubCategory.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk, format=None):
+    def get(self, request, pk, format = None):
         subcategory = self.get_object(pk)
         products = subcategory.product_set.all()
         serializer = ProductSerializer(products, many = True)
         return Response(serializer.data)
     
-    def delete(self, request, pk, format=None):
+    def delete(self, request, pk, format = None):
         subcategory = self.get_object(pk)
         subcategory.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)

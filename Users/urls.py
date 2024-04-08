@@ -1,4 +1,4 @@
-from .views import admin_signup ,customer_signup, supplier_signup, driver_signup, customersupporter_signup,login,delete_account,AddressList,AddressDetail
+from .views import admin_signup ,customer_signup, supplier_signup, driver_signup, customersupporter_signup,login,delete_account
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from django.urls import path
 
@@ -12,6 +12,4 @@ urlpatterns = [
     path('customersupporter/signup/', customersupporter_signup),
     path('login/', login),
     path('delete/', delete_account),
-    path('address/', AddressList.as_view()),
-    path('address/<int:pk>', AddressDetail.as_view())
 ]

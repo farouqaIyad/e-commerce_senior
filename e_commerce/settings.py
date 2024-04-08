@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "catalog.apps.CatalogConfig",
     "user_feedback.apps.UserFeedbackConfig",
     "shoppingcart_and_order.apps.ShoppingcartAndOrderConfig",
+    'address'
 ]
 
 MIDDLEWARE = [
@@ -92,7 +93,7 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'e-com',
+        'NAME': 'e-commerce',
         'USER':'root',
         'PASSWORD':'FarOuQ_2022',
         'HOST':'localhost',
