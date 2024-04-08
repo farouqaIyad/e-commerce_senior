@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "Users.apps.UsersConfig",
     "catalog.apps.CatalogConfig",
     "user_feedback.apps.UserFeedbackConfig",
-    "shoppingcart_and_order.apps.ShoppingcartAndOrderConfig"
+    "shoppingcart_and_order.apps.ShoppingcartAndOrderConfig",
 ]
 
 MIDDLEWARE = [
@@ -114,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=100),  # Change minutes to your desired value
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=100),  # Change minutes to your desired value
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # Optional: Change refresh token lifetime
 }
 # Internationalization

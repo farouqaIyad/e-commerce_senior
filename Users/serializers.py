@@ -30,7 +30,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-        fields = ['address_name','city','district','details','phone_number']
+        fields = ['address_name', 'city','district','details','phone_number',]
 
     
 

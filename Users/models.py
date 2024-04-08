@@ -36,7 +36,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'id'
-    REQUIRED_FIELDS = ['email', 'password']  # Add any additional required fields
+    REQUIRED_FIELDS = ['email', 'password']  
 
     def __str__(self):
         return self.first_name + " " + self.last_name
@@ -45,14 +45,15 @@ class User(AbstractBaseUser):
 
 class Address(models.Model):
     customer = models.ForeignKey(User,on_delete = models.CASCADE)
-    address_name = models.CharField(max_length=30, blank=True)
-    city = models.CharField(max_length = 64,blank = True)
-    district = models.CharField(max_length=64,blank = True)
+    address_name = models.CharField(max_length=64, blank=True,null=True)
+    city = models.CharField(max_length = 64,blank = True,null=True)
+    district = models.CharField(max_length=64,blank = True,null=True)
     details = models.TextField()
     phone_number = models.IntegerField()
 
     class Meta:
         db_table = 'address'
+        unique_together = [['customer', 'address_name']]
 
 
 

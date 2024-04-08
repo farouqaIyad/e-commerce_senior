@@ -6,10 +6,8 @@ from Users.models import User
 from django.db import models
 
 
-
-
 class ReviewSerializer(serializers.ModelSerializer):
-    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    product = models.ForeignKey(Product,on_delete = models.CASCADE)
     customer = models.ForeignKey(User,on_delete=models.CASCADE)
 
     def create(self,validated_data):
@@ -24,9 +22,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['rating', 'comment','product','customer']
+        fields = ['rating', 'comment','customer']
         read_only_fields = ('customer',)
-
 
 
 class ComplaintsSerializer(serializers.ModelSerializer):
@@ -38,6 +35,7 @@ class ComplaintsSerializer(serializers.ModelSerializer):
         validated_data['order'] = self.context.get('order')
 
         return super().create(validated_data)
+    
     class Meta:
         model = Complaints
         fields = ['order', 'complain_type', 'status_type']
