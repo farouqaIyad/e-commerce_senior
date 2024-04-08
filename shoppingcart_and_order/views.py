@@ -3,10 +3,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
+from address.models import Address
 from rest_framework import status
 from django.http import Http404
 from .models import Order
-from address.models import Address
 
 
 class ShoppingCartList(APIView):
@@ -29,6 +29,21 @@ class ShoppingCartList(APIView):
         user_shoppingcart = request.user.shoppingcart
         serializer = ShoppingCartSerializer(instance=user_shoppingcart)
         return Response(serializer.data)
+
+class ShoppingCartDetail(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self, pk):
+        try:
+            return Product.objects.get(pk = pk)
+        except Product.DoesNotExist:
+            raise Http404
+
+    def delete(self, request, pk, format = None):
+        user_shoppingcart = request.user.shoppingcart
+        product = self.get_object(pk = pk)
+        user_wishlist.product.delete(product)
+        return Response(status = status.HTTP_204_NO_CONTENT)
     
 
 class OrderList(APIView):

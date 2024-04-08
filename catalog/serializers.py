@@ -1,9 +1,9 @@
-from rest_framework import serializers
-from .models import Product,Category,SubCategory
-from django.db import models
-from Users.models import User
 from user_feedback.serializers import ReviewSerializer
+from .models import Product,Category,SubCategory
+from rest_framework import serializers
 from django.db.models import Avg
+from Users.models import User
+from django.db import models
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -16,7 +16,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class SubCategorySerializer(serializers.ModelSerializer):
     category = models.ForeignKey(Category, on_delete = models.CASCADE)
     
-    def create(self,validated_data):
+    def create(self, validated_data):
         validated_data['category'] = self.context.get('category')
         return super().create(validated_data)
     

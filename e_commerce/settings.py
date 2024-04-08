@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "catalog.apps.CatalogConfig",
     "user_feedback.apps.UserFeedbackConfig",
     "shoppingcart_and_order.apps.ShoppingcartAndOrderConfig",
-    'address'
+    'address',
+    'wishlist',
 ]
 
 MIDDLEWARE = [
