@@ -17,14 +17,16 @@ class WishlistList(APIView):
         except Product.DoesNotExist:
             raise Http404
 
-    def post(self, request, format = None):
+    def post(self, request, format=None):
         user_wishlist = request.user.wishlist
-        product = self.get_object(request.data['product'])  
-        user_wishlist.product.add(product)    
+        product = self.get_object(request.data["product"])
+        user_wishlist.product.add(product)
         user_wishlist.save()
-        return Response({"message":"added to wishlist"},status=status.HTTP_201_CREATED)    
-    
-    def get(self,request,format = None):
+        return Response(
+            {"message": "added to wishlist"}, status=status.HTTP_201_CREATED
+        )
+
+    def get(self, request, format=None):
         user_wishlist = request.user.wishlist
         serializer = WishlistSerializer(instance=user_shoppingcart)
         return Response(serializer.data)
@@ -32,15 +34,15 @@ class WishlistList(APIView):
 
 class WishlistDetail(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def get_object(self, pk):
         try:
-            return Product.objects.get(pk = pk)
+            return Product.objects.get(pk=pk)
         except Product.DoesNotExist:
             raise Http404
 
-    def delete(self, request, pk, format = None):
+    def delete(self, request, pk, format=None):
         user_wishlist = request.user.wishlist
-        product = self.get_object(pk = pk)
+        product = self.get_object(pk=pk)
         user_wishlist.product.delete(product)
-        return Response(status = status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)

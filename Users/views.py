@@ -1,92 +1,139 @@
+from .serializers import (
+    UserSerializer,
+    SupplierProfileSerializer,
+    CustomerProfileSerializer,
+    DriverProfileSerializer,
+)
+from .models import (
+    User,
+    Supplier,
+    Customer,
+    Driver,
+    SupplierProfile,
+    CustomerProfile,
+    DriverProfile,
+)
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny,IsAuthenticated
-from .serializers import UserSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from .utils import extract_from_serializer
 from rest_framework.views import APIView
-from django.db import transaction
+from .serializers import UserSerializer
 from rest_framework import status
 from .models import User
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def admin_signup(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        with transaction.atomic():
-            email,password, first_name, last_name = extract_from_serializer(serializer)
-            user = User.objects.create_admin(email= email,password = password,first_name = first_name,last_name = last_name)
-            token = RefreshToken.for_user(user)
-            return Response({'user_id': user.id,'token':str(token.access_token)}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class SupplierSignupAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_serializer = UserSerializer(data=request.data)
+        profile_serializer = SupplierProfileSerializer(data=request.data)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def customer_signup(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        with transaction.atomic():
-            user = serializer.save()
+        if user_serializer.is_valid() and profile_serializer.is_valid():
+            user_data = user_serializer.validated_data
+            profile_data = profile_serializer.validated_data
+            user = Supplier.objects.create_user(**user_data)
+            profile_data["user"] = user
+            supplier_profile = SupplierProfile.objects.create(**profile_data)
             token = RefreshToken.for_user(user)
-            return Response({'user_id': user.id,'token':str(token.access_token)}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def supplier_signup(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        with transaction.atomic():
-            email,password, first_name, last_name = extract_from_serializer(serializer)
-            user = User.objects.create_user(email= email,password = password,first_name = first_name,last_name = last_name,is_supplier = True)
+            return Response(
+                {
+                    "user": user_serializer.data,
+                    "supplier_profile": SupplierProfileSerializer(
+                        supplier_profile
+                    ).data,
+                    "token": str(token.access_token),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            errors = {}
+            errors.update(user_serializer.errors)
+            errors.update(profile_serializer.errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerSignupAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_serializer = UserSerializer(data=request.data)
+        profile_serializer = CustomerProfileSerializer(data=request.data)
+
+        if user_serializer.is_valid() and profile_serializer.is_valid():
+            user_data = user_serializer.validated_data
+            profile_data = profile_serializer.validated_data
+            user = Customer.objects.create_user(**user_data)
+            profile_data["user"] = user
+            customer_profile = CustomerProfile.objects.create(**profile_data)
             token = RefreshToken.for_user(user)
-            return Response({'user_id': user.id,'token':str(token.access_token)}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def driver_signup(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        with transaction.atomic():
-            email,password, first_name, last_name = extract_from_serializer(serializer)
-            user = User.objects.create_user(email= email,password = password,first_name = first_name,last_name = last_name,is_driver = True)
+            return Response(
+                {
+                    "user": user_serializer.data,
+                    "customer_profile": CustomerProfileSerializer(
+                        customer_profile
+                    ).data,
+                    "token": str(token.access_token),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            errors = {}
+            errors.update(user_serializer.errors)
+            errors.update(profile_serializer.errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DriverSignupAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_serializer = UserSerializer(data=request.data)
+        profile_serializer = DriverProfileSerializer(data=request.data)
+
+        if user_serializer.is_valid() and profile_serializer.is_valid():
+            user_data = user_serializer.validated_data
+            profile_data = profile_serializer.validated_data
+            user = Driver.objects.create_user(**user_data)
+            profile_data["user"] = user
+            driver_profile = DriverProfile.objects.create(**profile_data)
             token = RefreshToken.for_user(user)
-            return Response({'user_id': user.id,'token':str(token.access_token)}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def customersupporter_signup(request):
-    serializer = UserSerializer(data=request.data)
-    if serializer.is_valid():
-        with transaction.atomic():
-            email,password, first_name, last_name = extract_from_serializer(serializer)
-            user = User.objects.create_user(email= email,password = password,first_name = first_name,last_name = last_name,is_superuser = True,is_staff = True)            
+            return Response(
+                {
+                    "user": user_serializer.data,
+                    "driver_profile": DriverProfileSerializer(driver_profile).data,
+                    "token": str(token.access_token),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            errors = {}
+            errors.update(user_serializer.errors)
+            errors.update(profile_serializer.errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLoginAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data["email"]
+        password = request.data.get("password")
+        user = User.objects.get(email=email)
+        if user and user.check_password(password):
             token = RefreshToken.for_user(user)
-            return Response({'user_id': user.id,'token':str(token.access_token)}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            message = "logged in as a {}".format(user.role)
+            return Response(
+                {"message": message, "token": str(token.access_token)},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"message": "incorrect email or password."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login(request):
-    email = request.data['email']
-    password = request.data.get('password')
-    user = User.objects.get(email = email)
-    if user and user.check_password(password):
-        token = RefreshToken.for_user(user)
-        return Response({"message":'login successful',"token":str(token.access_token)},status=status.HTTP_200_OK)
-    return Response({"message":"incorrect email or password."},status=status.HTTP_400_BAD_REQUEST)
-         
-@api_view(['GET'])
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
-        user = request.user
-        print(user)
-        return Response({"message":"{}".format(request.user.id)})
-
-
-
+    user = request.user
+    print(user)
+    return Response({"message": "{}".format(request.user.id)})

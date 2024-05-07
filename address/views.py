@@ -11,28 +11,31 @@ class AddressList(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
-        serializer = AddressSerializer(data=request.data,context = {'customer':request.user})
+        serializer = AddressSerializer(
+            data=request.data, context={"customer": request.user}
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def get(self,request,format=None):
+
+    def get(self, request, format=None):
         user = request.user
         user_addresses = user.address_set.all()
-        serializer = AddressSerializer(user_addresses,many = True)
+        serializer = AddressSerializer(user_addresses, many=True)
         return Response(serializer.data)
-    
+
+
 class AddressDetail(APIView):
     permission_classes = [IsAuthenticated]
-        
+
     def get(self, request, pk, format=None):
-        address = get_object_or_404(Address,pk=pk)
+        address = get_object_or_404(Address, pk=pk)
         serializer = AddressSerializer(instance=address)
         return Response(serializer.data)
-    
-    def put(self, request, pk, format = None):
-        address = get_object_or_404(Address,pk=pk)
+
+    def put(self, request, pk, format=None):
+        address = get_object_or_404(Address, pk=pk)
         serializer = AddressSerializer(address, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -40,6 +43,6 @@ class AddressDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
-        address = get_object_or_404(Address,pk=pk)
+        address = get_object_or_404(Address, pk=pk)
         address.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT) 
+        return Response(status=status.HTTP_204_NO_CONTENT)

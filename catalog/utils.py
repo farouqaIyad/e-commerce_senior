@@ -1,8 +1,8 @@
-from rest_framework.response import Response
-from django.db import transaction
-from rest_framework import status
+import uuid
 
-def save_and_return_response(serializer):
-    with transaction.atomic():
-        serializer.save()
-        return Response(serializer.data,status = status.HTTP_201_CREATED) 
+
+def generate_sku(name):
+    name_prefix = name[:3].upper()
+    unique_id = uuid.uuid4().hex[:6].upper()
+    sku = f"{name_prefix}-{unique_id}"
+    return sku
