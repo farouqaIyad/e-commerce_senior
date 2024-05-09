@@ -13,7 +13,7 @@ class Category(MPTTModel):
     is_active = models.BooleanField(default=True)
     parent = TreeForeignKey(
         "self",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="children",
         null=True,
         blank=True,
@@ -35,6 +35,7 @@ class Category(MPTTModel):
 class ProductType(models.Model):
     name = models.CharField(max_length=50, unique=True)
     product_size = models.ForeignKey("ProductSize", on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "product_type"
@@ -60,6 +61,7 @@ class Size_Value(models.Model):
 
     class Meta:
         db_table = "size_values"
+        unique_together = ("size", "value")
 
 
 class ProductColor(models.Model):
@@ -94,7 +96,7 @@ class Product(models.Model):
     description = models.TextField(unique=False, null=False, blank=False)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     product_type = models.ForeignKey(
-        ProductType, related_name="product_type", on_delete=models.PROTECT
+        ProductType, related_name="product_type", on_delete=models.CASCADE
     )
 
     supplier = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -114,7 +116,7 @@ class Product(models.Model):
 class ProductDetail(models.Model):
     sku = models.CharField(max_length=20, unique=True, null=False, blank=True)
     product = models.ForeignKey(
-        Product, related_name="product", on_delete=models.PROTECT
+        Product, related_name="product", on_delete=models.CASCADE
     )
     color = models.ManyToManyField(ProductColor)
     size = models.ManyToManyField(Size_Value)
@@ -131,7 +133,7 @@ class ProductDetail(models.Model):
 
 
 class Stock(models.Model):
-    product_detail = models.OneToOneField(ProductDetail, on_delete=models.PROTECT)
+    product_detail = models.OneToOneField(ProductDetail, on_delete=models.CASCADE)
     quantity_in_stock = models.IntegerField(default=0)
     products_sold = models.IntegerField(default=0)
 
@@ -140,7 +142,7 @@ class Stock(models.Model):
 
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     image_url = models.ImageField(
         unique=False, upload_to="images/", default="images/default.png"
     )

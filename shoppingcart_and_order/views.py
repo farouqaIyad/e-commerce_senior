@@ -8,6 +8,8 @@ from rest_framework import status
 from django.http import Http404
 from .models import Order
 
+#add qty in the product details if from the inside of the product details
+#if from outside the qty is one 
 
 class ShoppingCartList(APIView):
     permission_classes = [IsAuthenticated]
