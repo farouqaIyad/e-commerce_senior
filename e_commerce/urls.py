@@ -8,9 +8,6 @@ urlpatterns = [
     path("user_feedback/", include("user_feedback.urls")),
     path("", include("shoppingcart_and_order.urls")),
     path("", include("address.urls")),
-    path("", include("deals.urls")),
     path("", include("wishlist.urls")),
-
     path("", include("search_and_filter.urls")),
-
 ]

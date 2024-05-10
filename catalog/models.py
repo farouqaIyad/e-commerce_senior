@@ -87,12 +87,6 @@ class ProductColor(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False, blank=False)
     slug = models.SlugField(max_length=150, unique=True, null=False, blank=False)
-    price = models.DecimalField(
-        max_digits=10, decimal_places=2, unique=False, null=False, blank=False
-    )
-    sale_price = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
     description = models.TextField(unique=False, null=False, blank=False)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     product_type = models.ForeignKey(
@@ -116,7 +110,18 @@ class Product(models.Model):
 class ProductDetail(models.Model):
     sku = models.CharField(max_length=20, unique=True, null=False, blank=True)
     product = models.ForeignKey(
-        Product, related_name="product", on_delete=models.CASCADE
+        Product, related_name="product_d", on_delete=models.CASCADE
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.01,
+        unique=False,
+        null=False,
+        blank=False,
+    )
+    sale_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
     )
     color = models.ManyToManyField(ProductColor)
     size = models.ManyToManyField(Size_Value)

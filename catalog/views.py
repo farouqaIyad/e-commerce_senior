@@ -27,10 +27,11 @@ from rest_framework import status
 from django.http import Http404
 from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
 class CategoryList(APIView):
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
         name, desc, parent = request.data.values()
@@ -201,7 +202,7 @@ class ProductColorList(APIView):
 
 class ProductList(APIView):
     permission_classes = [IsSupplierOrReadOnly]
-    #parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, format=None):
         try:
@@ -209,12 +210,13 @@ class ProductList(APIView):
             product_type_id = request.data.get("product_type")
             colors_ids = request.data.get("colors", [])
             sizes_ids = request.data.get("sizes", [])
-            quantity_in_stock = request.data.get("qis", [])
+            quantity_in_stock = request.data.get("quantitiy_in_stock", [])
+            prices = request.data.get("prices", [])
 
             category = Category.objects.get(id=category_id)
             product_type = ProductType.objects.get(id=product_type_id)
             user = request.user
-
+            Bool_value = True
             serializer = ProductRegisterSerializer(
                 data=request.data,
                 context={
@@ -229,8 +231,13 @@ class ProductList(APIView):
 
                     product_details = []
                     for i in range(len(quantity_in_stock)):
-                        product_detail = ProductDetail(product=product)
+                        print("it got here")
+
+                        product_detail = ProductDetail(
+                            product=product, is_main=Bool_value, price=prices[i]
+                        )
                         product_detail.save()
+                        print("it got here2")
 
                         color_id = colors_ids[i] if i < len(colors_ids) else None
                         size_id = sizes_ids[i] if i < len(sizes_ids) else None
@@ -256,6 +263,7 @@ class ProductList(APIView):
                                 )
 
                         product_details.append(product_detail)
+                        Bool_value = False
 
                     stocks = [
                         Stock(product_detail=detail, quantity_in_stock=qis)

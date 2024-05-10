@@ -8,6 +8,7 @@ from django.http import Http404
 from .models import Wishlist, ProductDetail
 from Users.models import CustomerProfile
 
+
 class WishlistList(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -18,10 +19,10 @@ class WishlistList(APIView):
             raise Http404
 
     def post(self, request, format=None):
-        customer = CustomerProfile.objects.get(user_id = request.user.id)
-        user_wishlist = Wishlist.objects.get(customer = customer)
+        customer = CustomerProfile.objects.get(user_id=request.user.id)
+        user_wishlist = Wishlist.objects.get(customer=customer)
         product_detail = request.data["product_detail"]
-        #product = request.data["product"]
+        # product = request.data["product"]
         """if product:
             product = ProductDetail.objects.filter(product__id=product, is_main=True)"""
         product = self.get_object(product_detail)
@@ -32,8 +33,8 @@ class WishlistList(APIView):
         )
 
     def get(self, request, format=None):
-        customer = CustomerProfile.objects.get(user_id = request.user.id)
-        user_wishlist = Wishlist.objects.get(customer = customer)
+        customer = CustomerProfile.objects.get(user_id=request.user.id)
+        user_wishlist = Wishlist.objects.get(customer=customer)
         serializer = WishlistSerializer(instance=user_wishlist)
         return Response(serializer.data)
 

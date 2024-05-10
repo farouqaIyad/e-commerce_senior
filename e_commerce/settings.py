@@ -52,13 +52,11 @@ INSTALLED_APPS = [
     "search_and_filter",
     "wishlist",
     "address",
-    "deals",
+    "promotion",
     # external applications
     "rest_framework_simplejwt",
-    # "django_elasticsearch_dsl",
-    "cloudinary_storage",
+    "django_elasticsearch_dsl",
     "rest_framework",
-    "cloudinary",
     "mptt",
 ]
 
@@ -77,7 +75,11 @@ ROOT_URLCONF = "e_commerce.urls"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    
+        
+    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 10,
 }
 
 TEMPLATES = [
@@ -102,17 +104,17 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "e-commerce",
-        "USER": "root",
-        "PASSWORD": "FarOuQ_2022",
-        "HOST": "localhost",
-        "PORT": "3306",
-    }
-}
-"""
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": "e-commerce",
+#         "USER": "root",
+#         "PASSWORD": "FarOuQ_2022",
+#         "HOST": "localhost",
+#         "PORT": "3306",
+#     }
+# }
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -123,7 +125,7 @@ DATABASES = {
         "PORT": "5432",
     }
 }
-"""
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -173,4 +175,5 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 ELASTICSEARCH_DSL = {"default": {"hosts": "localhost:9200"}}

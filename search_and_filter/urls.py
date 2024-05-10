@@ -1,4 +1,4 @@
 from django.urls import path
-from .views import SearchList
+from .views import SearchProduct
 
-urlpatterns = [path("search/", SearchList.as_view())]
+urlpatterns = [path("search/<str:query>", SearchProduct.as_view())]
