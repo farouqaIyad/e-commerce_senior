@@ -18,8 +18,8 @@ from .models import (
     ProductDetail,
     Stock,
     ProductSize,
-    ProductImage,
 )
+from ..promotion.tasks import test_func
 from permissions import IsSupplierOrReadOnly, IsAdminOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -55,7 +55,7 @@ class CategoryList(APIView):
             return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
-        category = Category.objects.filter(level=0)
+        category = Category.active_categories.filter(level=0)
         serializer = CategorySerializer(instance=category, many=True)
         return Response(serializer.data)
 
@@ -70,7 +70,7 @@ class CategoryDetail(APIView):
             raise Http404
 
     def get(self, request, slug, format=None):
-        category = self.get_object(slug)
+        category = Category.active_categories.filter(slug=slug)
         categories = category.get_children()
         if categories:
             serializer = CategorySerializer(instance=categories, many=True)
@@ -123,8 +123,12 @@ class ProductTypeDetail(APIView):
 
     def get(self, request, slug, format=None):
         try:
-            category = Category.objects.filter(slug=slug).first()
-            types = ProductType.objects.filter(category=category)
+            # this one needs to be tested in the toolbar
+            # try using the selected_related('book','cupboard')
+            # or prefetch_related()
+            # category = Category.objects.filter(slug=slug).first()
+            # types = ProductType.objects.filter(category=category)
+            types = ProductType.objects.filter(category__slug = slug).prefetch_related('category')
             serializer = ProductTypeSerializer(instance=types, many=True)
             return Response({"message": serializer.data})
         except:
@@ -169,8 +173,9 @@ class ProductSizeValueDetail(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request, name, format=None):
+        # this one needs to be tested in the toolbar
         try:
-            size_values = Size_Value.objects.filter(size__producttype__name=name)
+            size_values = Size_Value.objects.filter(size__producttype__name=name).select_related('size','producttype')
             serializer = ProductSizeValueSerializer(instance=size_values, many=True)
             return Response({"message": serializer.data})
         except:
@@ -197,9 +202,6 @@ class ProductColorList(APIView):
         return Response(serailizer.data)
 
 
-# remember to create a manageres for category and product to only get the active products
-
-
 class ProductList(APIView):
     permission_classes = [IsSupplierOrReadOnly]
     # parser_classes = [MultiPartParser, FormParser]
@@ -212,6 +214,7 @@ class ProductList(APIView):
             sizes_ids = request.data.get("sizes", [])
             quantity_in_stock = request.data.get("quantitiy_in_stock", [])
             prices = request.data.get("prices", [])
+            images = request.data.get("images",[])
 
             category = Category.objects.get(id=category_id)
             product_type = ProductType.objects.get(id=product_type_id)
@@ -231,13 +234,11 @@ class ProductList(APIView):
 
                     product_details = []
                     for i in range(len(quantity_in_stock)):
-                        print("it got here")
 
                         product_detail = ProductDetail(
                             product=product, is_main=Bool_value, price=prices[i]
                         )
                         product_detail.save()
-                        print("it got here2")
 
                         color_id = colors_ids[i] if i < len(colors_ids) else None
                         size_id = sizes_ids[i] if i < len(sizes_ids) else None
@@ -291,8 +292,7 @@ class ProductDetailView(APIView):
     permission_classes = [IsSupplierOrReadOnly]
 
     def get(self, request, slug, format=None):
-        category = Category.objects.filter(slug=slug).first()
-        products = Product.objects.filter(category=category)
+        products = Product.active_products.filter(category__slug = slug).select_related("category")
         serializer = ProductSerializer(instance=products, many=True)
         return Response(serializer.data)
 
@@ -307,7 +307,7 @@ class ProductDetailView(APIView):
         )
 
     def delete(self, request, slug, format=None):
-        product = Product.objects.filter(slug=slug)
+        product = Product.objects.filter(slug=slug).first()
         product.delete()
         return Response(
             {"message": "product deleted"}, status=status.HTTP_204_NO_CONTENT
@@ -317,8 +317,7 @@ class ProductDetailView(APIView):
 class ProductDetailList(APIView):
 
     def get(self, request, slug, format=None):
-        product = Product.objects.filter(slug=slug).first()
-        product_detail = ProductDetail.objects.filter(product=product)
+        product_detail = ProductDetail.active_product_details.filter(product__slug = slug).select_related('product')
         serializer = ProductDetailSerializer(instance=product_detail, many=True)
         return Response(serializer.data)
 
@@ -341,3 +340,10 @@ class ProductDetailDetail(APIView):
         product_detail = ProductDetail.objects.get(pk=pk)
         product_detail.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class test(APIView):
+    def get(self, request, format=None):
+        test_func.delay()
+        return Response({"message":"fucking shit"})
+
+

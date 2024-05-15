@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from catalog.models import ProductDetail
+from catalog.models import Product,ProductDetail
 from Users.models import SupplierProfile
 
 
@@ -35,8 +35,9 @@ class Promotion(models.Model):
 
 
 class ProductOnPromotion(models.Model):
-    product_detail_id = models.ForeignKey(ProductDetail, on_delete=models.CASCADE)
+    product_id = models.ForeignKey(Product, on_delete=models.CASCADE)
     promotion_id = models.OneToOneField(Promotion, on_delete=models.CASCADE)
+    supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "product_promotion"

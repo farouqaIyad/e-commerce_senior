@@ -8,6 +8,7 @@ from catalog.serializers import ProductSerializer
 from .documents import ProductDocument
 from django.http import HttpResponse
 from elasticsearch_dsl import Q
+from django.http import JsonResponse
 
 
 class SearchProduct(APIView, LimitOffsetPagination):
@@ -16,13 +17,19 @@ class SearchProduct(APIView, LimitOffsetPagination):
 
     def get(self, request, query):
         try:
-            q = Q("multi_match", query=query, fields=["name"],fuzziness = 'auto')
+            q = Q(
+                "multi_match",
+                query=query,
+                fields=[
+                    "name",
+                ],
+                fuzziness="auto",
+            )
             search = self.search_document.search().query(q)
             response = search.execute()
             results = self.paginate_queryset(response, request, view=self)
-            serializer = self.product_serializer(results, many = True)
+            serializer = self.product_serializer(results, many=True)
             return self.get_paginated_response(serializer.data)
-        
+
         except Exception as e:
             return HttpResponse(e, status=500)
-

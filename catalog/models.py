@@ -6,6 +6,11 @@ from Users.models import User
 from django.db import models
 
 
+class CategoryManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super(CategoryManager, self).get_queryset().filter(is_active=True)
+
+
 class Category(MPTTModel):
     name = models.CharField(max_length=100, unique=True, null=False, blank=False)
     slug = models.SlugField(max_length=150, unique=True, null=False, blank=False)
@@ -19,6 +24,9 @@ class Category(MPTTModel):
         blank=True,
         unique=False,
     )
+
+    active_categories = CategoryManager()
+    objects = models.Manager()
 
     class MPTTMeta:
         order_insertion_by = ["name"]
@@ -84,6 +92,11 @@ class ProductColor(models.Model):
         db_table = "colors"
 
 
+class ProductManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super(ProductManager, self).get_queryset().filter(is_active=True)
+
+
 class Product(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False, blank=False)
     slug = models.SlugField(max_length=150, unique=True, null=False, blank=False)
@@ -96,6 +109,28 @@ class Product(models.Model):
     supplier = models.ForeignKey(User, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     date_created = models.DateTimeField(auto_now_add=True, editable=False)
+    main_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.01,
+        unique=False,
+        null=False,
+        blank=False,
+    )
+    main_sale_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        unique=False,
+        null=True,
+        blank=True,
+    )
+    reviews_count = models.IntegerField(default=0)
+    average_rating = models.FloatField(default=0)
+    main_image = models.ImageField(
+        unique=False, upload_to="images/", default="images/default.png"
+    )
+    active_products = ProductManager()
+    objects = models.Manager()
 
     class Meta:
         db_table = "product"
@@ -105,6 +140,11 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         return super().save(*args, **kwargs)
+
+
+class ProductDetailManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super(ProductDetailManager, self).get_queryset().filter(is_active=True)
 
 
 class ProductDetail(models.Model):
@@ -127,6 +167,8 @@ class ProductDetail(models.Model):
     size = models.ManyToManyField(Size_Value)
     is_active = models.BooleanField(default=True)
     is_main = models.BooleanField(default=False)
+    active_product_details = ProductDetailManager()
+    objects = models.Manager()
 
     class Meta:
         db_table = "product_detail"
@@ -134,6 +176,12 @@ class ProductDetail(models.Model):
     def save(self, *args, **kwargs):
         if not self.sku:
             self.sku = generate_sku(self.product.name)
+        if self.is_main:
+            if self.sale_price:
+                self.product.main_sale_price = self.sale_price
+            self.product.main_price = self.price
+            self.product.save()
+        
         return super().save(*args, **kwargs)
 
 
@@ -145,13 +193,14 @@ class Stock(models.Model):
     class Meta:
         db_table = "stock"
 
-
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name='images',on_delete=models.CASCADE)
+    is_main = models.BooleanField(default=False)
     image_url = models.ImageField(
         unique=False, upload_to="images/", default="images/default.png"
     )
-    is_main = models.BooleanField(default=False)
-
-    class Meta:
-        db_table = "product_image"
+    def save(self, *args, **kwargs):
+        if self.is_main:
+            self.product.main_image = self.image_url
+            self.product.save()
+        return super().save(*args, **kwargs)

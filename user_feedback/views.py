@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from catalog.models import Product
 from rest_framework import status
 from django.http import Http404
+from .models import Review
 
 
 class ReviewList(APIView):
@@ -27,13 +28,13 @@ class ReviewDetail(APIView):
 
     def get_object(self, pk):
         try:
-            return Product.objects.get(pk=pk)
-        except Product.DoesNotExist:
+            return Review.objects.get(pk=pk)
+        except Review.DoesNotExist:
             raise Http404
 
     def delete(self, request, pk, format=None):
-        product = self.get_object(pk)
-        product.delete()
+        review = self.get_object(pk)
+        review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

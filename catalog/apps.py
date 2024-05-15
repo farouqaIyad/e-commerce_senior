@@ -11,4 +11,5 @@ class CatalogConfig(AppConfig):
         from .models import Category, Product
 
         request_finished.connect(signals.category_post_save, sender=Category)
+        request_finished.connect(signals.category_post_delete, sender=Category)
         request_finished.connect(signals.product_post_save, sender=Product)

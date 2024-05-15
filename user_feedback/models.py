@@ -15,6 +15,14 @@ class Review(models.Model):
     class Meta:
         db_table = "review"
 
+    def save(self, *args, **kwargs):
+        if self.product:
+            self.product.reviews_count += 1
+            print("found")
+            self.product.average_rating += self.rating / self.product.reviews_count
+            self.product.save()
+        return super().save(*args, **kwargs)
+
 
 class Complaints(models.Model):
     # order = models.OneToOneField(Order,on_delete = models.CASCADE)

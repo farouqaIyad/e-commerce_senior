@@ -3,10 +3,10 @@ from .models import (
     Category,
     ProductType,
     ProductDetail,
-    ProductImage,
     ProductColor,
     ProductSize,
     Size_Value,
+    ProductImage
 )
 from user_feedback.serializers import ReviewSerializer
 from rest_framework import serializers
@@ -72,6 +72,11 @@ class ProductColorSerializer(serializers.ModelSerializer):
 
 
 class ProductRegisterSerializer(serializers.ModelSerializer):
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(
+            max_length=10000, allow_empty_file=False, use_url=False, write_only=True
+        )
+    )
     supplier = models.ForeignKey(User, on_delete=models.CASCADE)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
 
@@ -79,6 +84,10 @@ class ProductRegisterSerializer(serializers.ModelSerializer):
         validated_data["supplier"] = self.context.get("supplier")
         validated_data["category"] = self.context.get("category")
         validated_data["product_type"] = self.context.get("product_type")
+        uploaded_images = validated_data.pop('uploaded_images')
+        product = Product.objects.create(**validated_data)
+        for image in uploaded_images:
+            ProductImage.objects.create(product = product, image_url = image)
         return super().create(validated_data)
 
     class Meta:
@@ -91,30 +100,18 @@ class ProductRegisterSerializer(serializers.ModelSerializer):
         ]
 
 
-class ProductImageSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ProductImage
-        fields = "__all__"
-
-
 class ProductSerializer(serializers.ModelSerializer):
-    # images = ProductImageSerializer(many=True, read_only=True)
     """uploaded_images = serializers.ListField(
         child=serializers.ImageField(
             max_length=10000, allow_empty_file=False, use_url=False, write_only=True
         )
     )"""
-    # average_rating = serializers.SerializerMethodField()
-    # reviews_count = serializers.SerializerMethodField()
 
-    # def get_average_rating(self, obj):
-    #     average_rating = obj.review_set.aggregate(Avg("rating"))["rating__avg"]
-    #     return average_rating if average_rating else 0
+    # price = serializers.SerializerMethodField()
 
-    # def get_reviews_count(self, obj):
-    #     reviews_count = obj.review_set.all().count()
-    #     return reviews_count if reviews_count is not None else 0
+    # def get_price(self, obj):
+    #     price = obj.product_d.filter(is_main = True).values("price")
+    #     return price
 
     """def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images')
@@ -129,9 +126,10 @@ class ProductSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "slug",
-            # "average_rating",
-            # "reviews_count",
-            # "images",
+            "main_price",
+            "average_rating",
+            "reviews_count",
+            "main_image",
             # "uploaded_images"
         ]
 
@@ -139,6 +137,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(serializers.ModelSerializer):
     color = ProductColorSerializer(many=True, read_only=True)
     size = ProductSizeValueSerializer(read_only=True, many=True)
+    reviews = ReviewSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProductDetail

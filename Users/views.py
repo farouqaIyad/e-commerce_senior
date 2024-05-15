@@ -54,6 +54,11 @@ class SupplierSignupAPIView(APIView):
             errors.update(profile_serializer.errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        user.delete()
+        return Response({"message": "user deleted {}".format(user)})
+
 
 class CustomerSignupAPIView(APIView):
     def post(self, request, *args, **kwargs):
@@ -84,6 +89,11 @@ class CustomerSignupAPIView(APIView):
             errors.update(profile_serializer.errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        user.delete()
+        return Response({"message": "user deleted {}".format(user)})
+
 
 class DriverSignupAPIView(APIView):
     def post(self, request, *args, **kwargs):
@@ -111,6 +121,11 @@ class DriverSignupAPIView(APIView):
             errors.update(user_serializer.errors)
             errors.update(profile_serializer.errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        user.delete()
+        return Response({"message": "user deleted {}".format(user)})
 
 
 class UserLoginAPIView(APIView):
