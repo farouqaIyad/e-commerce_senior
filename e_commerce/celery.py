@@ -11,6 +11,7 @@ app.config_from_object(settings, namespace="CELERY")
 
 app.autodiscover_tasks()
 
-@app.task(bind= True)
+
+@app.task(bind=True)
 def debug_task(self):
     print(str(self.request))

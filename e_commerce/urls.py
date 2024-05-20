@@ -11,5 +11,6 @@ urlpatterns = [
     path("", include("address.urls")),
     path("", include("wishlist.urls")),
     path("", include("search_and_filter.urls")),
+    path("", include("promotion.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
 ]

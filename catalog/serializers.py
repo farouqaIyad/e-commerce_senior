@@ -6,12 +6,11 @@ from .models import (
     ProductColor,
     ProductSize,
     Size_Value,
-    ProductImage
 )
 from user_feedback.serializers import ReviewSerializer
 from rest_framework import serializers
 from django.db.models import Avg
-from Users.models import User
+from Users.models import SupplierProfile
 from django.db import models
 
 
@@ -24,7 +23,15 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["id", "name", "description", "parent", "is_leaf", "is_active"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "parent",
+            "is_leaf",
+            "is_active",
+            "category_image",
+        ]
         read_only_fields = ["id", "is_leaf"]
 
 
@@ -72,22 +79,13 @@ class ProductColorSerializer(serializers.ModelSerializer):
 
 
 class ProductRegisterSerializer(serializers.ModelSerializer):
-    uploaded_images = serializers.ListField(
-        child=serializers.ImageField(
-            max_length=10000, allow_empty_file=False, use_url=False, write_only=True
-        )
-    )
-    supplier = models.ForeignKey(User, on_delete=models.CASCADE)
+    supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
 
     def create(self, validated_data):
         validated_data["supplier"] = self.context.get("supplier")
         validated_data["category"] = self.context.get("category")
         validated_data["product_type"] = self.context.get("product_type")
-        uploaded_images = validated_data.pop('uploaded_images')
-        product = Product.objects.create(**validated_data)
-        for image in uploaded_images:
-            ProductImage.objects.create(product = product, image_url = image)
         return super().create(validated_data)
 
     class Meta:
@@ -101,24 +99,6 @@ class ProductRegisterSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    """uploaded_images = serializers.ListField(
-        child=serializers.ImageField(
-            max_length=10000, allow_empty_file=False, use_url=False, write_only=True
-        )
-    )"""
-
-    # price = serializers.SerializerMethodField()
-
-    # def get_price(self, obj):
-    #     price = obj.product_d.filter(is_main = True).values("price")
-    #     return price
-
-    """def create(self, validated_data):
-        uploaded_images = validated_data.pop('uploaded_images')
-        product = Product.objects.create(**validated_data)
-        for image in uploaded_images:
-            ProductImage.objects.create(product = product, image_url = image)
-        return product"""
 
     class Meta:
         model = Product
@@ -130,16 +110,32 @@ class ProductSerializer(serializers.ModelSerializer):
             "average_rating",
             "reviews_count",
             "main_image",
-            # "uploaded_images"
         ]
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     color = ProductColorSerializer(many=True, read_only=True)
     size = ProductSizeValueSerializer(read_only=True, many=True)
-    reviews = ReviewSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProductDetail
-        fields = "__all__"
+        fields = [
+            "id",
+            "color",
+            "size",
+            "sku",
+            "price",
+            "sale_price",
+            "is_active",
+            "is_main",
+            "product",
+        ]
         depth = 1
+
+
+class ProductPageSerializer(serializers.ModelSerializer):
+    product_detail = ProductDetailSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Product
+        fields = "__all__"

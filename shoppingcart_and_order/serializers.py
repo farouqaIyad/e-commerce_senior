@@ -1,46 +1,49 @@
 from catalog.serializers import ProductSerializer, Product
 from rest_framework import serializers
-from .models import ShoppingCart, Order
-from address.serializers import AddressSerializer
+from .models import ShoppingCart, Order, ShoppingCartProducts
+from address.models import Address
+from catalog.serializers import ProductDetailSerializer
+from django.db import models
+
+class ShoppingCartProductsSerializer(serializers.ModelSerializer):
+    product = ProductDetailSerializer(read_only=True)
+
+    class Meta:
+        model = ShoppingCartProducts
+        fields = ["product", "quantity"]
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-    products = serializers.SerializerMethodField()
-    total_cost = serializers.SerializerMethodField()
+    shopping_cart = ShoppingCartProductsSerializer(many=True, read_only=True)
 
-    def get_products(self, obj):
-        products = obj.product.all()
-        serializer = ProductSerializer(products, many=True)
-        return serializer.data
-
-    def get_total_cost(self, obj):
-        products = obj.product.all()
-        total_cost = 0
-        for product in products:
-            total_cost += product.price
-        return total_cost
+    # @staticmethod
+    # def setup_eager_loading(queryset):
+    #     return queryset.select_related('shopping_cart')
 
     class Meta:
         model = ShoppingCart
-        fields = ["products", "total_cost"]
+        fields = ["pk", "shopping_cart", "total_price"]
+        read_only_fields = ["total_price"]
 
 
-class OrderSerializer(ShoppingCartSerializer):
-    address = serializers.SerializerMethodField()
+class OrderSerializer(serializers.ModelSerializer):
+    shopping_cart = models.OneToOneField(ShoppingCart,on_delete=models.CASCADE)
+    order_address = models.ForeignKey(Address,on_delete=models.CASCADE)
+    shopping_cart_serializer = ShoppingCartSerializer(read_only = True)
 
-    def get_address(self, obj):
-        address = obj.order_address
-        serializer = AddressSerializer(instance=address)
-        return serializer.data
+    def create(self, validated_data):
+        validated_data["shopping_cart"] = self.context.get('shopping_cart')
+        validated_data['order_address'] = self.context.get("order_address")
+        return super().create(validated_data)
 
     class Meta:
         model = Order
         fields = [
-            "products",
             "date_created",
             "date_deliverd",
             "order_status",
             "address",
             "total_cost",
+            "shopping_cart_serializer"
         ]
         read_only_fields = ("date_created", "date_deliverd", "order_status")

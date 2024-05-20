@@ -29,4 +29,3 @@ def product_post_save(sender, instance, created, **kwargs):
         for sub_product in product_details:
             sub_product.is_active = False
             sub_product.save()
-

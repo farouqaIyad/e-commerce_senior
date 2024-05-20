@@ -2,7 +2,7 @@ from mptt.models import MPTTModel, TreeForeignKey, TreeManyToManyField
 from django.utils.translation import gettext_lazy as _
 from django.utils.text import slugify
 from .utils import generate_sku
-from Users.models import User
+from Users.models import User, SupplierProfile
 from django.db import models
 
 
@@ -23,6 +23,9 @@ class Category(MPTTModel):
         null=True,
         blank=True,
         unique=False,
+    )
+    category_image = models.ImageField(
+        unique=False, upload_to="images/category/", default="images/default.png"
     )
 
     active_categories = CategoryManager()
@@ -106,7 +109,7 @@ class Product(models.Model):
         ProductType, related_name="product_type", on_delete=models.CASCADE
     )
 
-    supplier = models.ForeignKey(User, on_delete=models.CASCADE)
+    supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     date_created = models.DateTimeField(auto_now_add=True, editable=False)
     main_price = models.DecimalField(
@@ -127,7 +130,7 @@ class Product(models.Model):
     reviews_count = models.IntegerField(default=0)
     average_rating = models.FloatField(default=0)
     main_image = models.ImageField(
-        unique=False, upload_to="images/", default="images/default.png"
+        unique=False, upload_to="images/product/", default="images/product/default.png"
     )
     active_products = ProductManager()
     objects = models.Manager()
@@ -150,7 +153,7 @@ class ProductDetailManager(models.Manager):
 class ProductDetail(models.Model):
     sku = models.CharField(max_length=20, unique=True, null=False, blank=True)
     product = models.ForeignKey(
-        Product, related_name="product_d", on_delete=models.CASCADE
+        Product, related_name="product_detail", on_delete=models.CASCADE
     )
     price = models.DecimalField(
         max_digits=10,
@@ -160,9 +163,7 @@ class ProductDetail(models.Model):
         null=False,
         blank=False,
     )
-    sale_price = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2, default=price)
     color = models.ManyToManyField(ProductColor)
     size = models.ManyToManyField(Size_Value)
     is_active = models.BooleanField(default=True)
@@ -181,26 +182,32 @@ class ProductDetail(models.Model):
                 self.product.main_sale_price = self.sale_price
             self.product.main_price = self.price
             self.product.save()
-        
+
         return super().save(*args, **kwargs)
 
 
 class Stock(models.Model):
-    product_detail = models.OneToOneField(ProductDetail, on_delete=models.CASCADE)
+    product_detail = models.OneToOneField(
+        ProductDetail, related_name="stock", on_delete=models.CASCADE
+    )
     quantity_in_stock = models.IntegerField(default=0)
     products_sold = models.IntegerField(default=0)
 
     class Meta:
         db_table = "stock"
 
-class ProductImage(models.Model):
-    product = models.ForeignKey(Product, related_name='images',on_delete=models.CASCADE)
-    is_main = models.BooleanField(default=False)
-    image_url = models.ImageField(
-        unique=False, upload_to="images/", default="images/default.png"
-    )
-    def save(self, *args, **kwargs):
-        if self.is_main:
-            self.product.main_image = self.image_url
-            self.product.save()
-        return super().save(*args, **kwargs)
+
+# class ProductImage(models.Model):
+#     product = models.ForeignKey(
+#         Product, related_name="images", on_delete=models.CASCADE
+#     )
+#     is_main = models.BooleanField(default=False)
+#     image_url = models.ImageField(
+#         unique=False, upload_to="images/", default="images/default.png"
+#     )
+
+#     def save(self, *args, **kwargs):
+#         if self.is_main:
+#             self.product.main_image = self.image_url
+#             self.product.save()
+#         return super().save(*args, **kwargs)

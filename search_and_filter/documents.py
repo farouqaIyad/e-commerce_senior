@@ -35,7 +35,7 @@ class ProductDocument(Document):
             "main_price",
             "reviews_count",
             "average_rating",
-            "main_image"
+            "main_image",
         ]
 
 

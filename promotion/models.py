@@ -1,30 +1,49 @@
+from typing import Iterable
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from catalog.models import Product,ProductDetail
-from Users.models import SupplierProfile
+from catalog.models import Product, ProductDetail
+from Users.models import User, CustomerProfile, SupplierProfile
+from .tasks import promotion_prices
 
 
 class Coupon(models.Model):
     name = models.CharField(max_length=255)
     coupon_code = models.CharField(max_length=10)
     supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
-    discount_percentege = models.IntegerField()
+    discount_value = models.DecimalField(
+        max_digits=7,
+        decimal_places=2,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+    user_max_use = models.IntegerField(blank=True, null=True)
 
     class Meta:
         db_table = "coupon"
-        unique_together = ("coupon_code", "supplier")
+
+
+class UsedCoupons(models.Model):
+    coupon_id = models.ForeignKey(
+        Coupon, related_name="used_coupons", on_delete=models.CASCADE
+    )
+    customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
+    used_coupons = models.IntegerField()
+
+    class Meta:
+        db_table = "usedcoupons"
 
 
 class Promotion(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
-    discount_percentege = models.IntegerField()
+    discount_percentege = models.IntegerField(blank=False, null=False)
     time_start = models.DateField()
     time_end = models.DateField()
     is_active = models.BooleanField(default=False)
     # celery well use this field
-    is_scheduled = models.BooleanField(default=False)
+    is_scheduled = models.BooleanField(default=True)
 
     def clean(self):
         if self.time_start > self.time_end:
@@ -35,9 +54,17 @@ class Promotion(models.Model):
 
 
 class ProductOnPromotion(models.Model):
-    product_id = models.ForeignKey(Product, on_delete=models.CASCADE)
-    promotion_id = models.OneToOneField(Promotion, on_delete=models.CASCADE)
-    supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product, related_name="products_on_promotion", on_delete=models.CASCADE
+    )
+    promotion = models.OneToOneField(Promotion, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "product_promotion"
+
+    def save(self, *args, **kwargs):
+        discount = self.promotion.discount_percentege
+        product_pk = self.product.pk
+
+        promotion_prices.delay(discount, product_pk)
+        super().save(*args, **kwargs)

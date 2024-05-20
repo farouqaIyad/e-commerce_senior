@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "mptt",
     "debug_toolbar",
-    "django_celery_results"
+    "django_celery_results",
 ]
 
 MIDDLEWARE = [
@@ -73,7 +73,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
 
 
 ROOT_URLCONF = "e_commerce.urls"
@@ -108,34 +107,34 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": "e-commerce",
-#         "USER": "root",
-#         "PASSWORD": "FarOuQ_2022",
-#         "HOST": "localhost",
-#         "PORT": "3306",
-#     }
-# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "e-commerce",
+        "USER": "root",
+        "PASSWORD": "FarOuQ_2022",
+        "HOST": "localhost",
+        "PORT": "3306",
+    }
+}
+
 
 def show_toolbar(request):
     return True
 
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK" : show_toolbar
-}
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "postgres",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "localhost",
-        "PORT": "5432",
-    }
-}
+DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": show_toolbar}
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": "postgres",
+#         "USER": "postgres",
+#         "PASSWORD": "postgres",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
 
 
 # Password validation
@@ -209,8 +208,8 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379"
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_BACKEND = "django-db"

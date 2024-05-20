@@ -8,6 +8,7 @@ from .serializers import (
     ProductSizeSerializer,
     ProductSizeValueSerializer,
     ProductSerializer,
+    ProductPageSerializer,
 )
 from .models import (
     Category,
@@ -18,8 +19,8 @@ from .models import (
     ProductDetail,
     Stock,
     ProductSize,
+    SupplierProfile
 )
-from ..promotion.tasks import test_func
 from permissions import IsSupplierOrReadOnly, IsAdminOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -123,12 +124,10 @@ class ProductTypeDetail(APIView):
 
     def get(self, request, slug, format=None):
         try:
-            # this one needs to be tested in the toolbar
-            # try using the selected_related('book','cupboard')
-            # or prefetch_related()
-            # category = Category.objects.filter(slug=slug).first()
-            # types = ProductType.objects.filter(category=category)
-            types = ProductType.objects.filter(category__slug = slug).prefetch_related('category')
+
+            types = ProductType.objects.filter(category__slug=slug).prefetch_related(
+                "category"
+            )
             serializer = ProductTypeSerializer(instance=types, many=True)
             return Response({"message": serializer.data})
         except:
@@ -173,9 +172,10 @@ class ProductSizeValueDetail(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request, name, format=None):
-        # this one needs to be tested in the toolbar
         try:
-            size_values = Size_Value.objects.filter(size__producttype__name=name).select_related('size','producttype')
+            size_values = Size_Value.objects.filter(
+                size__producttype__name=name
+            ).select_related('size')
             serializer = ProductSizeValueSerializer(instance=size_values, many=True)
             return Response({"message": serializer.data})
         except:
@@ -214,16 +214,16 @@ class ProductList(APIView):
             sizes_ids = request.data.get("sizes", [])
             quantity_in_stock = request.data.get("quantitiy_in_stock", [])
             prices = request.data.get("prices", [])
-            images = request.data.get("images",[])
+            # images = request.data.get("images", [])
 
             category = Category.objects.get(id=category_id)
             product_type = ProductType.objects.get(id=product_type_id)
-            user = request.user
+            supplier = SupplierProfile.objects.get(user = request.user)
             Bool_value = True
             serializer = ProductRegisterSerializer(
                 data=request.data,
                 context={
-                    "supplier": user,
+                    "supplier": supplier,
                     "category": category,
                     "product_type": product_type,
                 },
@@ -292,7 +292,9 @@ class ProductDetailView(APIView):
     permission_classes = [IsSupplierOrReadOnly]
 
     def get(self, request, slug, format=None):
-        products = Product.active_products.filter(category__slug = slug).select_related("category")
+        products = Product.active_products.filter(category__slug=slug).select_related(
+            "category"
+        )
         serializer = ProductSerializer(instance=products, many=True)
         return Response(serializer.data)
 
@@ -317,8 +319,8 @@ class ProductDetailView(APIView):
 class ProductDetailList(APIView):
 
     def get(self, request, slug, format=None):
-        product_detail = ProductDetail.active_product_details.filter(product__slug = slug).select_related('product')
-        serializer = ProductDetailSerializer(instance=product_detail, many=True)
+        product = Product.active_products.filter(slug=slug).first()
+        serializer = ProductPageSerializer(instance=product)
         return Response(serializer.data)
 
 
@@ -340,10 +342,3 @@ class ProductDetailDetail(APIView):
         product_detail = ProductDetail.objects.get(pk=pk)
         product_detail.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-class test(APIView):
-    def get(self, request, format=None):
-        test_func.delay()
-        return Response({"message":"fucking shit"})
-
-

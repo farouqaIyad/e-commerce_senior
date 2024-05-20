@@ -1,4 +1,5 @@
-from .serializers import ShoppingCartSerializer, Product, OrderSerializer
+from .models import Order, ShoppingCartProducts, ShoppingCart, ProductDetail,CustomerProfile
+from .serializers import ShoppingCartSerializer, OrderSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .utils import save_products_to_order
@@ -6,10 +7,6 @@ from rest_framework.views import APIView
 from address.models import Address
 from rest_framework import status
 from django.http import Http404
-from .models import Order
-
-# add qty in the product details if from the inside of the product details
-# if from outside the qty is one
 
 
 class ShoppingCartList(APIView):
@@ -17,36 +14,43 @@ class ShoppingCartList(APIView):
 
     def get_object(self, pk):
         try:
-            return Product.objects.get(pk=pk)
-        except Product.DoesNotExist:
+            return ProductDetail.objects.get(pk=pk)
+        except ProductDetail.DoesNotExist:
             raise Http404
 
     def post(self, request, format=None):
-        user_shoppingcart = request.user.shoppingcart
-        product = self.get_object(request.data["product"])
-        user_shoppingcart.product.add(product)
-        user_shoppingcart.save()
+        shopping_cart = ShoppingCart.objects.get(pk=request.user)
+        product = self.get_object(request.data["product_id"])
+        shopping_cart_products = ShoppingCartProducts.objects.create(
+            shopping_cart=shopping_cart, product=product
+        )
+        shopping_cart_products.save()
         return Response({"message": "added to cart"}, status=status.HTTP_201_CREATED)
 
     def get(self, request, format=None):
-        user_shoppingcart = request.user.shoppingcart
-        serializer = ShoppingCartSerializer(instance=user_shoppingcart)
+        shopping_cart = ShoppingCart.objects.get(pk=request.user)
+        serializer = ShoppingCartSerializer(instance=shopping_cart)
         return Response(serializer.data)
 
 
 class ShoppingCartDetail(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_object(self, pk):
-        try:
-            return Product.objects.get(pk=pk)
-        except Product.DoesNotExist:
-            raise Http404
+    def put(self, request, pk, format=None):
+        shopping_cart = ShoppingCart.objects.get(pk=request.user)
+        product = ShoppingCartProducts.objects.filter(
+            shopping_cart=shopping_cart, product=pk
+        ).first()
+        product.quantity = request.data["quantity"]
+        product.save()
+        return Response({"message": "updated"})
 
     def delete(self, request, pk, format=None):
-        user_shoppingcart = request.user.shoppingcart
-        product = self.get_object(pk=pk)
-        user_shoppingcart.product.delete(product)
+        shopping_cart = ShoppingCart.objects.get(pk=request.user)
+        product = ShoppingCartProducts.objects.filter(
+            shopping_cart=shopping_cart, product=pk
+        ).first()
+        product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -60,13 +64,13 @@ class OrderList(APIView):
             raise Http404
 
     def post(self, request, format=None):
-        user_shoppingcart = request.user.shoppingcart
+        shopping_cart = ShoppingCart.objects.get(customer__user = request.user)
         address = self.get_object(pk=request.data["address_id"])
-        order = Order.objects.create(customer=request.user, order_address=address)
-        products = user_shoppingcart.product.all()
-        save_products_to_order(order, products)
-
-        return Response({"message": "order created"})
+        serializer = OrderSerializer(data = request.data, context = {"shopping_cart":shopping_cart, "order_address":address})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
         order = request.user.order_set.all()
