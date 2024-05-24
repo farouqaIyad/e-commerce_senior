@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from catalog.models import Product, ProductDetail
 from Users.models import User, CustomerProfile, SupplierProfile
-from .tasks import promotion_prices
 
 
 class Coupon(models.Model):
@@ -54,17 +53,11 @@ class Promotion(models.Model):
 
 
 class ProductOnPromotion(models.Model):
-    product = models.ForeignKey(
+    product = models.OneToOneField(
         Product, related_name="products_on_promotion", on_delete=models.CASCADE
     )
-    promotion = models.OneToOneField(Promotion, on_delete=models.CASCADE)
+    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "product_promotion"
 
-    def save(self, *args, **kwargs):
-        discount = self.promotion.discount_percentege
-        product_pk = self.product.pk
-
-        promotion_prices.delay(discount, product_pk)
-        super().save(*args, **kwargs)

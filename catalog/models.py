@@ -14,7 +14,6 @@ class CategoryManager(models.Manager):
 class Category(MPTTModel):
     name = models.CharField(max_length=100, unique=True, null=False, blank=False)
     slug = models.SlugField(max_length=150, unique=True, null=False, blank=False)
-    description = models.TextField()
     is_active = models.BooleanField(default=True)
     parent = TreeForeignKey(
         "self",
@@ -25,7 +24,9 @@ class Category(MPTTModel):
         unique=False,
     )
     category_image = models.ImageField(
-        unique=False, upload_to="images/category/", default="images/default.png"
+        unique=False,
+        upload_to="images/category/",
+        default="images/category/default.png",
     )
 
     active_categories = CategoryManager()
@@ -53,14 +54,9 @@ class ProductType(models.Model):
 
 
 class ProductSize(models.Model):
-    class Size(models.TextChoices):
-        CLOTHES_SIZE = "CLOTHES_SIZE", "Clothes_size"
-        SHOES_SIZE = "SHOES_SIZE", "Shoes_size"
-        TV_SIZE = "TV_SIZE", "Tv_size"
-        STORAGE_SIZE = "STORAGE_SIZE", "Storage_size"
-        BED_SIZE = "BED_SIZE", "Bed_size"
+    
 
-    product_size = models.CharField(max_length=50, choices=Size.choices)
+    product_size = models.CharField(max_length=50)
 
     class Meta:
         db_table = "product_size"
@@ -76,20 +72,8 @@ class Size_Value(models.Model):
 
 
 class ProductColor(models.Model):
-    class Colors(models.TextChoices):
-        RED = "RED", "Red"
-        BLUE = "BLUE", "Blue"
-        GREEN = "GREEN", "Green"
-        YELLOW = "YELLOW", "Yellow"
-        ORANGE = "ORANGE", "Orange"
-        PURPLE = "PURPLE", "Purple"
-        PINK = "PINK", "Pink"
-        WHITE = "WHITE", "White"
-        BLACK = "BLACK", "Black"
-        GRAY = "GRAY", "Gray"
-        BROWN = "BROWN", "Brown"
 
-    color = models.CharField(max_length=20, choices=Colors.choices)
+    color = models.CharField(max_length=20)
 
     class Meta:
         db_table = "colors"
@@ -121,11 +105,7 @@ class Product(models.Model):
         blank=False,
     )
     main_sale_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        unique=False,
-        null=True,
-        blank=True,
+        max_digits=10, decimal_places=2, unique=False, null=True, blank=True
     )
     reviews_count = models.IntegerField(default=0)
     average_rating = models.FloatField(default=0)
@@ -163,7 +143,7 @@ class ProductDetail(models.Model):
         null=False,
         blank=False,
     )
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2, default=price)
+    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     color = models.ManyToManyField(ProductColor)
     size = models.ManyToManyField(Size_Value)
     is_active = models.BooleanField(default=True)

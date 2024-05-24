@@ -35,12 +35,6 @@ class SupplierProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_approved"]
 
 
-class CustomerProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomerProfile
-        fields = ["id"]
-
-
 class DriverProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = DriverProfile

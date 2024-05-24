@@ -5,6 +5,7 @@ from address.models import Address
 from catalog.serializers import ProductDetailSerializer
 from django.db import models
 
+
 class ShoppingCartProductsSerializer(serializers.ModelSerializer):
     product = ProductDetailSerializer(read_only=True)
 
@@ -27,13 +28,12 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    shopping_cart = models.OneToOneField(ShoppingCart,on_delete=models.CASCADE)
-    order_address = models.ForeignKey(Address,on_delete=models.CASCADE)
-    shopping_cart_serializer = ShoppingCartSerializer(read_only = True)
+    order_address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    shopping_cart = ShoppingCartSerializer(read_only=True)
 
     def create(self, validated_data):
-        validated_data["shopping_cart"] = self.context.get('shopping_cart')
-        validated_data['order_address'] = self.context.get("order_address")
+        validated_data["shopping_cart"] = self.context.get("shopping_cart")
+        validated_data["order_address"] = self.context.get("order_address")
         return super().create(validated_data)
 
     class Meta:
@@ -42,8 +42,9 @@ class OrderSerializer(serializers.ModelSerializer):
             "date_created",
             "date_deliverd",
             "order_status",
-            "address",
+            "order_address",
             "total_cost",
-            "shopping_cart_serializer"
+            "shopping_cart",
         ]
         read_only_fields = ("date_created", "date_deliverd", "order_status")
+        depth = 1

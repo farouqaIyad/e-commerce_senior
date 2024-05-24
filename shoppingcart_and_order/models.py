@@ -8,9 +8,7 @@ from django.db import models
 
 
 class ShoppingCart(models.Model):
-    customer = models.OneToOneField(
-        CustomerProfile, on_delete=models.CASCADE, primary_key=True
-    )
+    customer = models.OneToOneField(CustomerProfile, on_delete=models.CASCADE)
     products = models.ManyToManyField(
         ProductDetail, blank=True, through="ShoppingCartProducts"
     )
@@ -36,12 +34,6 @@ class ShoppingCartProducts(models.Model):
 
     class Meta:
         db_table = "shoppingcartproducts"
-
-
-@receiver(post_save, sender=CustomerProfile)
-def create_shopping_cart(sender, instance, created, **kwargs):
-    if created:
-        ShoppingCart.objects.create(customer=instance)
 
 
 class Order(models.Model):
@@ -70,4 +62,3 @@ class Order(models.Model):
 
     class Meta:
         db_table = "order"
-

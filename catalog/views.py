@@ -19,7 +19,7 @@ from .models import (
     ProductDetail,
     Stock,
     ProductSize,
-    SupplierProfile
+    SupplierProfile,
 )
 from permissions import IsSupplierOrReadOnly, IsAdminOrReadOnly
 from rest_framework.response import Response
@@ -29,6 +29,8 @@ from django.http import Http404
 from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from .tasks import save_product_details
 
 
 class CategoryList(APIView):
@@ -175,7 +177,7 @@ class ProductSizeValueDetail(APIView):
         try:
             size_values = Size_Value.objects.filter(
                 size__producttype__name=name
-            ).select_related('size')
+            ).select_related("size")
             serializer = ProductSizeValueSerializer(instance=size_values, many=True)
             return Response({"message": serializer.data})
         except:
@@ -218,8 +220,7 @@ class ProductList(APIView):
 
             category = Category.objects.get(id=category_id)
             product_type = ProductType.objects.get(id=product_type_id)
-            supplier = SupplierProfile.objects.get(user = request.user)
-            Bool_value = True
+            supplier = SupplierProfile.objects.get(user=request.user)
             serializer = ProductRegisterSerializer(
                 data=request.data,
                 context={
@@ -231,47 +232,9 @@ class ProductList(APIView):
             if serializer.is_valid():
                 with transaction.atomic():
                     product = serializer.save()
-
-                    product_details = []
-                    for i in range(len(quantity_in_stock)):
-
-                        product_detail = ProductDetail(
-                            product=product, is_main=Bool_value, price=prices[i]
-                        )
-                        product_detail.save()
-
-                        color_id = colors_ids[i] if i < len(colors_ids) else None
-                        size_id = sizes_ids[i] if i < len(sizes_ids) else None
-
-                        if color_id:
-                            try:
-                                color = ProductColor.objects.get(id=color_id)
-                                product_detail.color.add(color)
-                            except ProductColor.DoesNotExist:
-                                return Response(
-                                    {"message": f"Color with ID {color_id} not found."},
-                                    status=status.HTTP_404_NOT_FOUND,
-                                )
-
-                        if size_id:
-                            try:
-                                size = Size_Value.objects.get(id=size_id)
-                                product_detail.size.add(size)
-                            except Size_Value.DoesNotExist:
-                                return Response(
-                                    {"message": f"Size with ID {size_id} not found."},
-                                    status=status.HTTP_404_NOT_FOUND,
-                                )
-
-                        product_details.append(product_detail)
-                        Bool_value = False
-
-                    stocks = [
-                        Stock(product_detail=detail, quantity_in_stock=qis)
-                        for detail, qis in zip(product_details, quantity_in_stock)
-                    ]
-                    Stock.objects.bulk_create(stocks)
-
+                    save_product_details.delay(
+                        product.id, quantity_in_stock, prices, colors_ids, sizes_ids
+                    )
                 return Response(
                     {"message": "Product created"}, status=status.HTTP_201_CREATED
                 )

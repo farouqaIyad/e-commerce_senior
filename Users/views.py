@@ -1,7 +1,6 @@
 from .serializers import (
     UserSerializer,
     SupplierProfileSerializer,
-    CustomerProfileSerializer,
     DriverProfileSerializer,
 )
 from .models import (
@@ -63,22 +62,16 @@ class SupplierSignupAPIView(APIView):
 class CustomerSignupAPIView(APIView):
     def post(self, request, *args, **kwargs):
         user_serializer = UserSerializer(data=request.data)
-        profile_serializer = CustomerProfileSerializer(data=request.data)
 
-        if user_serializer.is_valid() and profile_serializer.is_valid():
+        if user_serializer.is_valid():
             user_data = user_serializer.validated_data
-            profile_data = profile_serializer.validated_data
             user = Customer.objects.create_user(**user_data)
-            profile_data["user"] = user
-            customer_profile = CustomerProfile.objects.create(**profile_data)
+            customer_profile = CustomerProfile.objects.create(user=user)
             token = RefreshToken.for_user(user)
 
             return Response(
                 {
                     "user": user_serializer.data,
-                    "customer_profile": CustomerProfileSerializer(
-                        customer_profile
-                    ).data,
                     "token": str(token.access_token),
                 },
                 status=status.HTTP_201_CREATED,
@@ -86,7 +79,6 @@ class CustomerSignupAPIView(APIView):
         else:
             errors = {}
             errors.update(user_serializer.errors)
-            errors.update(profile_serializer.errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):

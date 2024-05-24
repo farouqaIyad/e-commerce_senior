@@ -1,6 +1,12 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_delete
-from .models import ShoppingCartProducts
+from .models import ShoppingCartProducts, CustomerProfile, ShoppingCart
+
+
+@receiver(post_save, sender=CustomerProfile)
+def create_shopping_cart(sender, instance, created, **kwargs):
+    if created:
+        ShoppingCart.objects.create(customer=instance)
 
 
 @receiver(post_save, sender=ShoppingCartProducts)

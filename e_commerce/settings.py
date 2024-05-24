@@ -14,7 +14,7 @@ import os
 
 from pathlib import Path
 from dotenv import load_dotenv
-
+from celery.schedules import crontab
 load_dotenv()
 
 
@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     "mptt",
     "debug_toolbar",
     "django_celery_results",
+    "django_celery_beat",
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -213,3 +215,9 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = "django-db"
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CHANNEL_LAYERS = {
+    "default":{"BACKEND":"channels.layers.InMemoryChannelLayer"},
+}
+

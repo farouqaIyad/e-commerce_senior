@@ -9,7 +9,7 @@ from .serializers import (
 )
 from catalog.serializers import ProductSerializer
 from django.db import transaction
-from .models import Coupon, Promotion, Product, SupplierProfile, ProductOnPromotion
+from .models import Coupon, Promotion, Product, SupplierProfile, ProductOnPromotion,ProductDetail
 from rest_framework.permissions import IsAuthenticated
 from django.core.serializers import serialize
 
@@ -78,6 +78,8 @@ class ProductOnPromotionList(APIView):
         return Response({"Message": "product added to promotions"})
 
     def get(self, request, pk, format=None):
-        products = Product.active_products.filter(product_on_promotion__promotion_id=pk)
+        products = Product.active_products.filter(
+            products_on_promotion__promotion_id=pk
+        )
         serializer = ProductSerializer(instance=products, many=True)
         return Response(serializer.data)

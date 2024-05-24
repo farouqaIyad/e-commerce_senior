@@ -107,6 +107,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "main_price",
+            "main_sale_price",
             "average_rating",
             "reviews_count",
             "main_image",
