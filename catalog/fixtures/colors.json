@@ -1,0 +1,57 @@
+[
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "1",
+        "fields":{"color":  "Red"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "2",
+        "fields":{"color":  "Blue"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "3",
+        "fields":{"color":  "Green"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "4",
+        "fields":{"color":  "Yellow"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "5",
+        "fields":{"color":  "Orange"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "6",
+        "fields":{"color":  "Purple"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "7",
+        "fields":{"color":  "Pink"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "8",
+        "fields":{"color":  "White"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "9",
+        "fields":{"color":  "Black"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "10",
+        "fields":{"color":  "Gray"
+    }},
+    {
+        "model":  "catalog.productcolor",
+        "id ":  "11",
+        "fields":{"color":  "Brown"
+    }}
+]

@@ -7,6 +7,7 @@ from django.db.models import Avg
 
 @registry.register_document
 class ProductDocument(Document):
+
     # to access a foreign key like the views you created you should declare a field for every foreign key
     # the product foreign key will be indexed
     # # the name of the field should be as the same as the related field

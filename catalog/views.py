@@ -9,6 +9,9 @@ from .serializers import (
     ProductSizeValueSerializer,
     ProductSerializer,
     ProductPageSerializer,
+    ProductAttribute,
+    ProductAttributeSerializer,
+    ProductTypeAttributesvaluesSerializer
 )
 from .models import (
     Category,
@@ -37,20 +40,18 @@ class CategoryList(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
-        name, desc, parent = request.data.values()
+        name, parent = request.data.values()
         try:
             if parent:
                 parent = Category.objects.get(id=parent)
 
-                category = Category.objects.create(
-                    name=name, description=desc, parent=parent
-                )
+                category = Category.objects.create(name=name, parent=parent)
                 return Response(
                     {"message": "created category"}, status=status.HTTP_201_CREATED
                 )
 
             elif not parent:
-                category = Category.objects.create(name=name, description=desc)
+                category = Category.objects.create(name=name)
                 return Response(
                     {"message": "created category"}, status=status.HTTP_201_CREATED
                 )

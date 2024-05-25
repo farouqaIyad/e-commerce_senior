@@ -28,9 +28,9 @@ def promotion_management(self):
 
 
 @shared_task(bind=True)
-def promotion_prices(self,promotion_id):
+def promotion_prices(self, promotion_id):
     with transaction.atomic():
-        promotion = Promotion.objects.get(pk = promotion_id)
+        promotion = Promotion.objects.get(pk=promotion_id)
         reduction = promotion.discount_percentege / 100
         products_detail = ProductDetail.active_product_details.filter(
             product__products_on_promotion__promotion=promotion

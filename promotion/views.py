@@ -9,7 +9,14 @@ from .serializers import (
 )
 from catalog.serializers import ProductSerializer
 from django.db import transaction
-from .models import Coupon, Promotion, Product, SupplierProfile, ProductOnPromotion,ProductDetail
+from .models import (
+    Coupon,
+    Promotion,
+    Product,
+    SupplierProfile,
+    ProductOnPromotion,
+    ProductDetail,
+)
 from rest_framework.permissions import IsAuthenticated
 from django.core.serializers import serialize
 

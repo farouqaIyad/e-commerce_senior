@@ -60,4 +60,3 @@ class ProductOnPromotion(models.Model):
 
     class Meta:
         db_table = "product_promotion"
-

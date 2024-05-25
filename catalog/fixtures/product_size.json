@@ -1,0 +1,62 @@
+[
+    {
+        "model":  "catalog.productsize",
+        "id ":  "1",
+        "fields":{"product_size":  "TV_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "2",
+        "fields":{"product_size":  "PHONE_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "3",
+        "fields":{"product_size":  "STORAGE_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "4",
+        "fields":{"product_size":  "SCREEN_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "5",
+        "fields":{"product_size":  "CLOTHES_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "6",
+        "fields":{"product_size":  "RING_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "7",
+        "fields":{"product_size":  "SHOES_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "8",
+        "fields":{"product_size":  "FRAGRANCE_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "9",
+        "fields":{"product_size":  "POWER_OUT_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "10",
+        "fields":{"product_size":  "BATTERY_SIZE"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "11",
+        "fields":{"product_size":  "CABLE_LENGTH"
+    }},
+    {
+        "model":  "catalog.productsize",
+        "id ":  "12",
+        "fields":{"product_size":  "BOTTLE_SIZE"
+    }}
+]

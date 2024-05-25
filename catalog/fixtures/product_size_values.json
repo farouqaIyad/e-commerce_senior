@@ -1,0 +1,242 @@
+[
+    {
+        "model":  "catalog.size_value",
+        "id":  "1",
+        "fields":{"size":  "1",
+        "value":  "32 inch"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "2",
+        "fields":{"size":  "1",
+        "value":  "42 inch"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "3",
+        "fields":{"size":  "2",
+        "value":  ""
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "4",
+        "fields":{"size":  "3",
+        "value":  "64 GB"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "5",
+        "fields":{"size":  "3",
+        "value":  "128 GB"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "6",
+        "fields":{"size":  "3",
+        "value":  "256 GB"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "7",
+        "fields":{"size":  "3",
+        "value":  "512 GB"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "8",
+        "fields":{"size":  "4",
+        "value":  "15 inch"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "9",
+        "fields":{"size":  "4",
+        "value":  "16 inch"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "10",
+        "fields":{"size":  "4",
+        "value":  "14 inch"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "11",
+        "fields":{"size":  "5",
+        "value":  "S"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "12",
+        "fields":{"size":  "5",
+        "value":  "M"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "13",
+        "fields":{"size":  "5",
+        "value":  "L"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "14",
+        "fields":{"size":  "5",
+        "value":  "XL"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "15",
+        "fields":{"size":  "6",
+        "value":  "14"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "16",
+        "fields":{"size":  "6",
+        "value":  "15"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "17",
+        "fields":{"size":  "6",
+        "value":  "16"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "18",
+        "fields":{"size":  "6",
+        "value":  "17"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "19",
+        "fields":{"size":  "7",
+        "value":  "36"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "20",
+        "fields":{"size":  "7",
+        "value":  "37"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "21",
+        "fields":{"size":  "7",
+        "value":  "38"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "22",
+        "fields":{"size":  "7",
+        "value":  "39"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "23",
+        "fields":{"size":  "7",
+        "value":  "40"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "24",
+        "fields":{"size":  "7",
+        "value":  "41"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "25",
+        "fields":{"size":  "7",
+        "value":  "42"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "26",
+        "fields":{"size":  "7",
+        "value":  "43"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "27",
+        "fields":{"size":  "7",
+        "value":  "44"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "28",
+        "fields":{"size":  "7",
+        "value":  "45"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "29",
+        "fields":{"size":  "8",
+        "value":  "100ml"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "30",
+        "fields":{"size":  "8",
+        "value":  "125ml"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "31",
+        "fields":{"size":  "9",
+        "value":  "20wh"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "32",
+        "fields":{"size":  "9",
+        "value":  "25wh"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "33",
+        "fields":{"size":  "10",
+        "value":  "10000mah"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "34",
+        "fields":{"size":  "10",
+        "value":  "15000 mah"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "35",
+        "fields":{"size":  "10",
+        "value":  "20000 mah"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "36",
+        "fields":{"size":  "11",
+        "value":  "1 meter"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "37",
+        "fields":{"size":  "11",
+        "value":  "1.5 meter"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "38",
+        "fields":{"size":  "11",
+        "value":  "2 meter"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "39",
+        "fields":{"size":  "12",
+        "value":  "250 ml"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "40",
+        "fields":{"size":  "12",
+        "value":  "200 ml"
+    }}
+]

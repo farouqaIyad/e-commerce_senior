@@ -23,7 +23,7 @@ class Category(MPTTModel):
         blank=True,
         unique=False,
     )
-    category_image = models.ImageField(
+    image_url = models.ImageField(
         unique=False,
         upload_to="images/category/",
         default="images/category/default.png",
@@ -46,7 +46,7 @@ class Category(MPTTModel):
 
 class ProductType(models.Model):
     name = models.CharField(max_length=50, unique=True)
-    product_size = models.ForeignKey("ProductSize", on_delete=models.CASCADE)
+    product_size = models.ForeignKey("ProductSize", on_delete=models.CASCADE, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
@@ -54,7 +54,6 @@ class ProductType(models.Model):
 
 
 class ProductSize(models.Model):
-    
 
     product_size = models.CharField(max_length=50)
 
@@ -87,7 +86,7 @@ class ProductManager(models.Manager):
 class Product(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False, blank=False)
     slug = models.SlugField(max_length=150, unique=True, null=False, blank=False)
-    description = models.TextField(unique=False, null=False, blank=False)
+    description = models.TextField(unique=False, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     product_type = models.ForeignKey(
         ProductType, related_name="product_type", on_delete=models.CASCADE
@@ -99,19 +98,21 @@ class Product(models.Model):
     main_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0.01,
         unique=False,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
     )
     main_sale_price = models.DecimalField(
         max_digits=10, decimal_places=2, unique=False, null=True, blank=True
     )
     reviews_count = models.IntegerField(default=0)
     average_rating = models.FloatField(default=0)
-    main_image = models.ImageField(
-        unique=False, upload_to="images/product/", default="images/product/default.png"
+    attributes = models.ManyToManyField(
+        "ProductTypeAttributes", through="ProductTypeAttributesValues"
     )
+
+    main_image = models.CharField(unique=False, max_length=255)
+
     active_products = ProductManager()
     objects = models.Manager()
 
@@ -175,6 +176,30 @@ class Stock(models.Model):
 
     class Meta:
         db_table = "stock"
+
+
+class ProductAttribute(models.Model):
+    attribute = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        db_table = "product_attribute"
+
+
+class ProductTypeAttributes(models.Model):
+    attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "product_type_attributes"
+
+
+class ProductTypeAttributesValues(models.Model):
+    type_attr = models.ForeignKey(ProductTypeAttributes, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    value = models.CharField(unique=True, max_length=255)
+
+    class Meta:
+        db_table = "product_type_attr_value"
 
 
 # class ProductImage(models.Model):

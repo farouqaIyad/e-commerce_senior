@@ -1,0 +1,325 @@
+[
+    {
+        "model":  "catalog.producttype",
+        "id":  "1",
+        "fields":{"name":  "smart phone",
+        "product_size":  "2",
+        "category":  "3"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "3",
+        "fields":{"name":  "case",
+        "product_size":  "2",
+        "category":  "4"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "4",
+        "fields":{"name":  "screen protector",
+        "product_size":  "2",
+        "category":  "4"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "5",
+        "fields":{"name":  "wall charger",
+        "product_size":  "9",
+        "category":  "6"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "6",
+        "fields":{"name":  "wireless_charger",
+        "product_size":  "9",
+        "category":  "6"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "7",
+        "fields":{"name":  "power banks",
+        "product_size":  "10",
+        "category":  "6"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "8",
+        "fields":{"name":  "cable-USB-C",
+        "product_size":  "11",
+        "category":  "5"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "9",
+        "fields":{"name":  "cable-USB-A",
+        "product_size":  "11",
+        "category":  "5"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "10",
+        "fields":{"name":  "over-ear-headset",
+        "product_size":  null,
+        "category":  "7"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "11",
+        "fields":{"name":  "in-ear-headset",
+        "product_size":  null,
+        "category":  "7"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "12",
+        "fields":{"name":  "on-ear-headset",
+        "product_size":  null,
+        "category":  "7"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "13",
+        "fields":{"name":  "Gaming Laptop",
+        "product_size":  "3",
+        "category":  "10"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "14",
+        "fields":{"name":  "notebook",
+        "product_size":  "3",
+        "category":  "10"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "15",
+        "fields":{"name":  "macbook",
+        "product_size":  "3",
+        "category":  "10"
+    }},
+    
+    {
+        "model":  "catalog.producttype",
+        "id":  "19",
+        "fields":{"name":  "inkjet-printer",
+        "product_size":  null,
+        "category":  "11"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "20",
+        "fields":{"name":  "laser-printer",
+        "product_size":  null,
+        "category":  "11"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "21",
+        "fields":{"name":  "LCD TV",
+        "product_size":  "1",
+        "category":  "12"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "22",
+        "fields":{"name":  "LED TV",
+        "product_size":  "1",
+        "category":  "12"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "23",
+        "fields":{"name":  "smart watches",
+        "product_size":  null,
+        "category":  "14"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "24",
+        "fields":{"name":  "VR headsets",
+        "product_size":  null,
+        "category":  "15"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "25",
+        "fields":{"name":  "video game",
+        "product_size":  null,
+        "category":  "16"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "26",
+        "fields":{"name":  "camera",
+        "product_size":  null,
+        "category":  "17"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "27",
+        "fields":{"name":  "dress",
+        "product_size":  "5",
+        "category":  "21"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "28",
+        "fields":{"name":  "tanks",
+        "product_size":  "5",
+        "category":  "22"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "29",
+        "fields":{"name":  "sweaters",
+        "product_size":  "5",
+        "category":  "22"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "30",
+        "fields":{"name":  "leggings",
+        "product_size":  "5",
+        "category":  "23"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "31",
+        "fields":{"name":  "shorts",
+        "product_size":  "5",
+        "category":  "23"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "32",
+        "fields":{"name":  "necklace",
+        "product_size":  null,
+        "category":  "25"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "33",
+        "fields":{"name":  "earrings-studs",
+        "product_size":  null,
+        "category":  "26"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "34",
+        "fields":{"name":  "earrings-hoops",
+        "product_size":  null,
+        "category":  "26"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "35",
+        "fields":{"name":  "ring",
+        "product_size":  "6",
+        "category":  "27"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "36",
+        "fields":{"name":  "running shoes",
+        "product_size":  "7",
+        "category":  "29"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "37",
+        "fields":{"name":  "walking shoes",
+        "product_size":  "7",
+        "category":  "29"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "38",
+        "fields":{"name":  "tennis shoes",
+        "product_size":  "7",
+        "category":  "30"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "39",
+        "fields":{"name":  "soccer shoes",
+        "product_size":  "7",
+        "category":  "30"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "41",
+        "fields":{"name":  "men tennis shoes",
+        "product_size":  "7",
+        "category":  "37"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "42",
+        "fields":{"name":  "men soccer shoes",
+        "product_size":  "7",
+        "category":  "37"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "43",
+        "fields":{"name":  "polo shirts",
+        "product_size":  "5",
+        "category":  "35"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "44",
+        "fields":{"name":  "jeans",
+        "product_size":  "5",
+        "category":  "33"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "45",
+        "fields":{"name":  "foundation shade",
+        "product_size":  null,
+        "category":  "41"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "46",
+        "fields":{"name":  "blush",
+        "product_size":  null,
+        "category":  "41"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "47",
+        "fields":{"name":  "lipstick shade",
+        "product_size":  null,
+        "category":  "42"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "48",
+        "fields":{"name":  "shampo",
+        "product_size":  "12",
+        "category":  "43"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "49",
+        "fields":{"name":  "conditioner",
+        "product_size":  "12",
+        "category":  "43"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "50",
+        "fields":{"name":  "mousse",
+        "product_size":  "12",
+        "category":  "43"
+    }},
+    {
+        "model":  "catalog.producttype",
+        "id":  "51",
+        "fields":{"name":  "fragrance",
+        "product_size":  "8",
+        "category":  "44"
+    }}
+]
