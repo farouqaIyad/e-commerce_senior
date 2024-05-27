@@ -22,6 +22,7 @@ from rest_framework.views import APIView
 from .serializers import UserSerializer
 from rest_framework import status
 from .models import User
+from permissions import IsAdminOrReadOnly
 
 
 class SupplierSignupAPIView(APIView):
@@ -144,3 +145,63 @@ def delete_account(request):
     user = request.user
     print(user)
     return Response({"message": "{}".format(request.user.id)})
+
+
+
+class SupplierList(APIView):
+
+    def get(self, request, format=None):
+        suppliers = SupplierProfile.objects.all()
+        serializer = SupplierProfileSerializer(instance=suppliers, many=True)
+        return Response(serializer.data)
+
+
+class SupplierDetail(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def put(self, request, pk, format=None):
+        supplier = SupplierProfile.objects.get(pk=pk)
+
+        serializer = SupplierProfileSerializer(supplier, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "supplier updated"})
+        return Response(
+            {"message": "couldn't update supplier"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, pk, format=None):
+        supplier = SupplierProfile.objects.get(pk=pk)
+        supplier.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class DriverList(APIView):
+
+    def get(self, request, format=None):
+        drivers = DriverProfile.objects.all()
+        serializer = DriverProfileSerializer(instance=drivers, many=True)
+        return Response(serializer.data)
+
+
+class DriverDetail(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def put(self, request, pk, format=None):
+        Driver = DriverProfile.objects.get(pk=pk)
+
+        serializer = DriverProfileSerializer(Driver, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "driver updated"})
+        return Response(
+            {"message": "couldn't update driver"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, pk, format=None):
+        supplier = SupplierProfile.objects.get(pk=pk)
+        supplier.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+

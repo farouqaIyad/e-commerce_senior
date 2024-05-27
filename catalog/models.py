@@ -6,9 +6,7 @@ from Users.models import User, SupplierProfile
 from django.db import models
 
 
-class CategoryManager(models.Manager):
-    def get_queryset(self) -> models.QuerySet:
-        return super(CategoryManager, self).get_queryset().filter(is_active=True)
+
 
 
 class Category(MPTTModel):
@@ -29,7 +27,6 @@ class Category(MPTTModel):
         default="images/category/default.png",
     )
 
-    active_categories = CategoryManager()
     objects = models.Manager()
 
     class MPTTMeta:
@@ -78,10 +75,6 @@ class ProductColor(models.Model):
         db_table = "colors"
 
 
-class ProductManager(models.Manager):
-    def get_queryset(self) -> models.QuerySet:
-        return super(ProductManager, self).get_queryset().filter(is_active=True)
-
 
 class Product(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False, blank=False)
@@ -107,13 +100,9 @@ class Product(models.Model):
     )
     reviews_count = models.IntegerField(default=0)
     average_rating = models.FloatField(default=0)
-    attributes = models.ManyToManyField(
-        "ProductTypeAttributes", through="ProductTypeAttributesValues"
-    )
 
     main_image = models.CharField(unique=False, max_length=255)
 
-    active_products = ProductManager()
     objects = models.Manager()
 
     class Meta:
@@ -124,11 +113,6 @@ class Product(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         return super().save(*args, **kwargs)
-
-
-class ProductDetailManager(models.Manager):
-    def get_queryset(self) -> models.QuerySet:
-        return super(ProductDetailManager, self).get_queryset().filter(is_active=True)
 
 
 class ProductDetail(models.Model):
@@ -149,7 +133,6 @@ class ProductDetail(models.Model):
     size = models.ManyToManyField(Size_Value)
     is_active = models.BooleanField(default=True)
     is_main = models.BooleanField(default=False)
-    active_product_details = ProductDetailManager()
     objects = models.Manager()
 
     class Meta:
@@ -178,41 +161,17 @@ class Stock(models.Model):
         db_table = "stock"
 
 
-class ProductAttribute(models.Model):
-    attribute = models.CharField(max_length=255, unique=True)
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, related_name="images", on_delete=models.CASCADE
+    )
+    is_main = models.BooleanField(default=False)
+    image_url = models.ImageField(
+        unique=False, upload_to="images/", default="images/default.png"
+    )
 
-    class Meta:
-        db_table = "product_attribute"
-
-
-class ProductTypeAttributes(models.Model):
-    attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
-    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = "product_type_attributes"
-
-
-class ProductTypeAttributesValues(models.Model):
-    type_attr = models.ForeignKey(ProductTypeAttributes, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    value = models.CharField(unique=True, max_length=255)
-
-    class Meta:
-        db_table = "product_type_attr_value"
-
-
-# class ProductImage(models.Model):
-#     product = models.ForeignKey(
-#         Product, related_name="images", on_delete=models.CASCADE
-#     )
-#     is_main = models.BooleanField(default=False)
-#     image_url = models.ImageField(
-#         unique=False, upload_to="images/", default="images/default.png"
-#     )
-
-#     def save(self, *args, **kwargs):
-#         if self.is_main:
-#             self.product.main_image = self.image_url
-#             self.product.save()
-#         return super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        if self.is_main:
+            self.product.main_image = self.image_url
+            self.product.save()
+        return super().save(*args, **kwargs)

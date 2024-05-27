@@ -44,7 +44,8 @@ class CouponDetail(APIView):
 
     def post(self, request, pk, format=None):
         coupon = Coupon.objects.filter(coupon_code=request.data["coupon_code"]).first()
-        return Response({"message": coupon.discount_value})
+        serializer = CouponSerializer(instance=coupon)
+        return Response(serializer.data)
 
 
 class PromotionList(APIView):
@@ -68,7 +69,7 @@ class PromotionDetail(APIView):
         serializer = PromotionSerializer(instance=promotion, data=request.data)
         if serializer.is_valid():
             serialize.save()
-            return Response({"message": "product updated"})
+            return Response({"message": "promotion updated"})
         return Response(
             {"message": "failed to update"}, status=status.HTTP_400_BAD_REQUEST
         )

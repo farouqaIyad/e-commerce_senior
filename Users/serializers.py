@@ -31,7 +31,13 @@ class UserSerializer(serializers.ModelSerializer):
 class SupplierProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = SupplierProfile
-        fields = ["brand_name", "brand_location", "commercial_recored", "is_approved"]
+        fields = [
+            "user",
+            "brand_name",
+            "brand_location",
+            "commercial_recored",
+            "is_approved",
+        ]
         read_only_fields = ["is_approved"]
 
 

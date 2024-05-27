@@ -13,7 +13,7 @@ app.config_from_object(settings, namespace="CELERY")
 app.conf.beat_schedule = {
     "check promotions that are valid": {
         "task": "promotion.tasks.promotion_management",
-        "schedule": crontab(hour=18, minute=47),
+        "schedule": crontab(hour=1, minute=00),
         #'args':()
     }
 }

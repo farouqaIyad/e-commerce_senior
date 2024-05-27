@@ -11,16 +11,17 @@ from .models import Promotion
 @shared_task(bind=True)
 def promotion_management(self):
     with transaction.atomic():
-        promotions = Promotion.objects.filter(is_scheduled=False)
+        promotions = Promotion.objects.filter(is_scheduled=True)
         now = datetime.now().date()
         for promotion in promotions:
             if promotion.time_end < now:
                 promotion.is_active = False
+                end_promotion.delay(promotion.id)
             else:
                 if promotion.time_start <= now:
 
                     promotion.is_active = True
-                    promotion_prices.delay(promotion.id)
+                    start_promotion.delay(promotion.id)
                 else:
                     promotion.is_active = False
             promotion.save()
@@ -28,7 +29,7 @@ def promotion_management(self):
 
 
 @shared_task(bind=True)
-def promotion_prices(self, promotion_id):
+def start_promotion(self, promotion_id):
     with transaction.atomic():
         promotion = Promotion.objects.get(pk=promotion_id)
         reduction = promotion.discount_percentege / 100
@@ -41,3 +42,15 @@ def promotion_prices(self, promotion_id):
             )
             product_detail.save()
     return "promotion applied to all products details"
+
+@shared_task(bind=True)
+def end_promotion(self, promotion_id):
+    with transaction.atomic():
+        promotion = Promotion.objects.get(pk=promotion_id)
+        products_detail = ProductDetail.objects.filter(
+            product__products_on_promotion__promotion=promotion
+        )
+        for product_detail in products_detail:
+            product_detail.sale_price = None
+            product_detail.save()
+    return "sale is over"

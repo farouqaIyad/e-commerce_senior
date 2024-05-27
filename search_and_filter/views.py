@@ -5,10 +5,10 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.pagination import LimitOffsetPagination
 from catalog.serializers import ProductSerializer
+from catalog.models import Product, Stock
 from .documents import ProductDocument
 from django.http import HttpResponse
 from elasticsearch_dsl import Q
-from django.http import JsonResponse
 
 
 class SearchProduct(APIView, LimitOffsetPagination):
@@ -33,3 +33,13 @@ class SearchProduct(APIView, LimitOffsetPagination):
 
         except Exception as e:
             return HttpResponse(e, status=500)
+        
+
+class bestsellers(APIView):
+    def get(self, request, format = None):
+        pass
+
+class Newly_added(APIView):
+    def get(self, request, format = None):
+        pass
+

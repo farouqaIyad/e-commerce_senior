@@ -9,9 +9,6 @@ from .serializers import (
     ProductSizeValueSerializer,
     ProductSerializer,
     ProductPageSerializer,
-    ProductAttribute,
-    ProductAttributeSerializer,
-    ProductTypeAttributesvaluesSerializer
 )
 from .models import (
     Category,
@@ -59,7 +56,7 @@ class CategoryList(APIView):
             return Response({"message": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
-        category = Category.active_categories.filter(level=0)
+        category = Category.objects.filter(level=0)
         serializer = CategorySerializer(instance=category, many=True)
         return Response(serializer.data)
 
@@ -74,7 +71,7 @@ class CategoryDetail(APIView):
             raise Http404
 
     def get(self, request, slug, format=None):
-        category = Category.active_categories.filter(slug=slug)
+        category = Category.objects.filter(slug=slug)
         categories = category.get_children()
         if categories:
             serializer = CategorySerializer(instance=categories, many=True)
@@ -256,11 +253,17 @@ class ProductDetailView(APIView):
     permission_classes = [IsSupplierOrReadOnly]
 
     def get(self, request, slug, format=None):
-        products = Product.active_products.filter(category__slug=slug).select_related(
-            "category"
-        )
+        category = Category.objects.filter(slug = slug).first()
+        if category.is_leaf_node():
+            products = Product.objects.filter(category=category)
+        else:
+            child_categories = category.get_descendants()
+            products = Product.objects.filter(category__in = child_categories)
+            print(products)
         serializer = ProductSerializer(instance=products, many=True)
         return Response(serializer.data)
+
+        # return Response(serializer.data)
 
     def put(self, request, slug, format=None):
         product = Product.objects.filter(slug=slug)
@@ -283,7 +286,7 @@ class ProductDetailView(APIView):
 class ProductDetailList(APIView):
 
     def get(self, request, slug, format=None):
-        product = Product.active_products.filter(slug=slug).first()
+        product = Product.objects.filter(slug=slug).first()
         serializer = ProductPageSerializer(instance=product)
         return Response(serializer.data)
 

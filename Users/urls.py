@@ -5,6 +5,8 @@ from .views import (
     DriverSignupAPIView,
     UserLoginAPIView,
     delete_account,
+    SupplierList,
+    SupplierDetail
 )
 from django.urls import path
 
@@ -16,4 +18,8 @@ urlpatterns = [
     path("driver/signup/", DriverSignupAPIView.as_view()),
     path("login/", UserLoginAPIView.as_view()),
     path("delete/", delete_account),
+    path("admin/suppliers",SupplierList.as_view()),
+    path("admin/suppliers/<int:pk>",SupplierDetail.as_view())
+
+
 ]
