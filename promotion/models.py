@@ -43,6 +43,7 @@ class Promotion(models.Model):
     is_active = models.BooleanField(default=False)
     # celery well use this field
     is_scheduled = models.BooleanField(default=True)
+    image_url = models.CharField(max_length=255, blank=True)
 
     def clean(self):
         if self.time_start > self.time_end:

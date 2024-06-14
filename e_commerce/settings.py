@@ -26,6 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "shit"
 
@@ -33,7 +34,12 @@ SECRET_KEY = "shit"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "6e8b-37-48-151-120.ngrok-free.app",
+    "donkey-casual-python.ngrok-free.app",
+    "127.0.0.1",
+]
+
 
 AUTH_USER_MODEL = "Users.User"
 
@@ -46,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     # local applications
     "shoppingcart_and_order.apps.ShoppingcartAndOrderConfig",
     "user_feedback.apps.UserFeedbackConfig",
@@ -57,13 +64,14 @@ INSTALLED_APPS = [
     "promotion",
     # external applications
     "rest_framework_simplejwt",
-    "django_elasticsearch_dsl",
+    # "django_elasticsearch_dsl",
     "rest_framework",
     "mptt",
     "debug_toolbar",
     "django_celery_results",
     "django_celery_beat",
     "channels",
+    "chat"
 ]
 
 MIDDLEWARE = [
@@ -110,16 +118,16 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "e-commerce",
-        "USER": "root",
-        "PASSWORD": "FarOuQ_2022",
-        "HOST": "localhost",
-        "PORT": "3306",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": "e-commerce",
+#         "USER": "root",
+#         "PASSWORD": "FarOuQ_2022",
+#         "HOST": "localhost",
+#         "PORT": "3306",
+#     }
+# }
 
 
 def show_toolbar(request):
@@ -128,16 +136,16 @@ def show_toolbar(request):
 
 DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": show_toolbar}
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql_psycopg2",
-#         "NAME": "postgres",
-#         "USER": "postgres",
-#         "PASSWORD": "postgres",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-#     }
-# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "postgres",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "localhost",
+        "PORT": "5432",
+    }
+}
 
 
 # Password validation
@@ -221,3 +229,5 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CHANNEL_LAYERS = {
     "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
 }
+
+ASGI_APPLICATION = 'e_commerce.routing.application'

@@ -2,6 +2,7 @@ from .serializers import (
     UserSerializer,
     SupplierProfileSerializer,
     DriverProfileSerializer,
+    CustomerProfileSerializer,
 )
 from .models import (
     User,
@@ -40,10 +41,6 @@ class SupplierSignupAPIView(APIView):
 
             return Response(
                 {
-                    "user": user_serializer.data,
-                    "supplier_profile": SupplierProfileSerializer(
-                        supplier_profile
-                    ).data,
                     "token": str(token.access_token),
                 },
                 status=status.HTTP_201_CREATED,
@@ -67,12 +64,13 @@ class CustomerSignupAPIView(APIView):
         if user_serializer.is_valid():
             user_data = user_serializer.validated_data
             user = Customer.objects.create_user(**user_data)
-            customer_profile = CustomerProfile.objects.create(user=user)
+            customer_profile = CustomerProfile.objects.create(
+                user=user, phone_number=request.data["phone_number"]
+            )
             token = RefreshToken.for_user(user)
 
             return Response(
                 {
-                    "user": user_serializer.data,
                     "token": str(token.access_token),
                 },
                 status=status.HTTP_201_CREATED,
@@ -130,7 +128,7 @@ class UserLoginAPIView(APIView):
             token = RefreshToken.for_user(user)
             message = "logged in as a {}".format(user.role)
             return Response(
-                {"message": message, "token": str(token.access_token)},
+                {"token": str(token.access_token), "role": user.role},
                 status=status.HTTP_200_OK,
             )
         return Response(
@@ -147,12 +145,11 @@ def delete_account(request):
     return Response({"message": "{}".format(request.user.id)})
 
 
-
 class SupplierList(APIView):
 
     def get(self, request, format=None):
-        suppliers = SupplierProfile.objects.all()
-        serializer = SupplierProfileSerializer(instance=suppliers, many=True)
+        suppliers = SupplierProfile.objects.filter(user=1)
+        serializer = SupplierProfileSerializer(instance=suppliers)
         return Response(serializer.data)
 
 
@@ -161,7 +158,6 @@ class SupplierDetail(APIView):
 
     def put(self, request, pk, format=None):
         supplier = SupplierProfile.objects.get(pk=pk)
-
         serializer = SupplierProfileSerializer(supplier, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -175,7 +171,35 @@ class SupplierDetail(APIView):
         supplier = SupplierProfile.objects.get(pk=pk)
         supplier.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+
+class CustomerList(APIView):
+
+    def get(self, request, format=None):
+        customer = CustomerProfile.objects.all()
+        serializer = CustomerProfileSerializer(instance=customer, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CustomerDetail(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def put(self, request, pk, format=None):
+        customer = CustomerProfile.objects.get(pk=pk)
+        serializer = CustomerProfileSerializer(customer, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Customer updated"})
+        return Response(
+            {"message": "couldn't update Customer"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, pk, format=None):
+        customer = CustomerProfile.objects.get(pk=pk)
+        customer.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class DriverList(APIView):
 
@@ -204,4 +228,3 @@ class DriverDetail(APIView):
         supplier = SupplierProfile.objects.get(pk=pk)
         supplier.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-

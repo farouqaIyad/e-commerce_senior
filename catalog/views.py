@@ -9,6 +9,9 @@ from .serializers import (
     ProductSizeValueSerializer,
     ProductSerializer,
     ProductPageSerializer,
+    ProductAttributeSerializer,
+    ProductTypeAttributesSerializer,
+    ProductAttributesvaluesSerializer
 )
 from .models import (
     Category,
@@ -20,6 +23,9 @@ from .models import (
     Stock,
     ProductSize,
     SupplierProfile,
+    ProductAttribute,
+    ProductAttributeValues,
+    ProductTypeAttributes
 )
 from permissions import IsSupplierOrReadOnly, IsAdminOrReadOnly
 from rest_framework.response import Response
@@ -29,12 +35,11 @@ from django.http import Http404
 from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
-
+from promotion.serializers import Promotion, PromotionSerializer
 from .tasks import save_product_details
 
 
 class CategoryList(APIView):
-    permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
         name, parent = request.data.values()
@@ -58,11 +63,11 @@ class CategoryList(APIView):
     def get(self, request, format=None):
         category = Category.objects.filter(level=0)
         serializer = CategorySerializer(instance=category, many=True)
-        return Response(serializer.data)
+        return Response({"categories": serializer.data})
 
 
 class CategoryDetail(APIView):
-    permission_classes = [IsAdminOrReadOnly]
+    # permission_classes = [IsAdminOrReadOnly]
 
     def get_object(self, slug):
         try:
@@ -71,11 +76,11 @@ class CategoryDetail(APIView):
             raise Http404
 
     def get(self, request, slug, format=None):
-        category = Category.objects.filter(slug=slug)
+        category = Category.objects.filter(slug=slug).first()
         categories = category.get_children()
         if categories:
             serializer = CategorySerializer(instance=categories, many=True)
-            return Response({"message": serializer.data})
+            return Response({"categories": serializer.data})
         else:
             return Response({"message": "no children"})
 
@@ -253,17 +258,14 @@ class ProductDetailView(APIView):
     permission_classes = [IsSupplierOrReadOnly]
 
     def get(self, request, slug, format=None):
-        category = Category.objects.filter(slug = slug).first()
+        category = Category.objects.filter(slug=slug).first()
         if category.is_leaf_node():
             products = Product.objects.filter(category=category)
         else:
             child_categories = category.get_descendants()
-            products = Product.objects.filter(category__in = child_categories)
-            print(products)
+            products = Product.objects.filter(category__in=child_categories)
         serializer = ProductSerializer(instance=products, many=True)
         return Response(serializer.data)
-
-        # return Response(serializer.data)
 
     def put(self, request, slug, format=None):
         product = Product.objects.filter(slug=slug)
@@ -309,3 +311,82 @@ class ProductDetailDetail(APIView):
         product_detail = ProductDetail.objects.get(pk=pk)
         product_detail.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class ProductAttributesList(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def post(self, request, format=None):
+        serializer = ProductAttributeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "created attribute"}, status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {"message": "failed to create attribute"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+class ProductAttributesDetail(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def delete(self, request, pk,format=None):
+        attribute = ProductAttribute.objects.get(pk = pk)
+        try:
+            attribute.delete()
+            return Response(
+                {"message": "deleted"}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({"message":"failed to delete"},status=status.HTTP_404_NOT_FOUND)
+        
+
+class ProductTypeAttributesList(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def post(self, request, format=None):
+        product_type = ProductType.objects.get(pk = request.data['product_type'])
+        attribute = ProductAttribute.objects.get(pk = request.data['product_attribute'])
+        serializer = ProductTypeAttributesSerializer(data=request.data,context = {"product_type":product_type,"attribute":attribute})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "added attributes to type"}, status=status.HTTP_201_CREATED
+            )
+        return Response(
+            {"message": "failed to add "}, status=status.HTTP_400_BAD_REQUEST
+        )
+    
+class ProductTypeAttributesDetail(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def delete(self, request, pk,format=None):
+        product_type_attribute = ProductTypeAttributes.objects.get(pk = pk)
+        try:
+            product_type_attribute.delete()
+            return Response(
+                {"message": "deleted"}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({"message":"failed to delete"},status=status.HTTP_404_NOT_FOUND)
+
+
+class StartUpList(APIView):
+    def get(self, request, format=None):
+        category = Category.objects.filter(level=0)
+        serializer = CategorySerializer(instance=category, many=True)
+        promotion = Promotion.objects.all()
+        promotion_serializer = PromotionSerializer(instance=promotion, many=True)
+        new_products = Product.objects.order_by("date_created")[:20]
+
+        new_products_serializer = ProductSerializer(instance=new_products, many=True)
+        highest_rating_products = Product.objects.order_by("average_rating")[:20]
+        highest_rating_products_serializer = ProductSerializer(
+            instance=highest_rating_products, many=True
+        )
+
+        return Response(
+            {
+                "categories": serializer.data,
+                "promotion": promotion_serializer.data,
+                "new products": new_products_serializer.data,
+                "best_rating": highest_rating_products_serializer.data,
+            }
+        )

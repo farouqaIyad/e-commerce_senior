@@ -6,8 +6,10 @@ from .models import (
     ProductColor,
     ProductSize,
     Size_Value,
-    ProductImage
-    
+    ProductImage,
+    ProductAttribute,
+    ProductAttributeValues,
+    ProductTypeAttributes,
 )
 from user_feedback.serializers import ReviewSerializer
 from rest_framework import serializers
@@ -28,6 +30,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "slug",
             "parent",
             "is_leaf",
             "is_active",
@@ -79,17 +82,20 @@ class ProductColorSerializer(serializers.ModelSerializer):
         model = ProductColor
         fields = "__all__"
 
+
 class ProductImageSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = ProductImage
-        fields = ['id','image_url']
+        fields = ["id", "image_url"]
 
 
 class ProductRegisterSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(
-        child = serializers.ImageField(max_length = 6, allow_empty_file = False, use_url = False),
-        write_only = True
+        child=serializers.ImageField(
+            max_length=6, allow_empty_file=False, use_url=False
+        ),
+        write_only=True,
     )
     supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
@@ -152,43 +158,43 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 class ProductPageSerializer(serializers.ModelSerializer):
     product_detail = ProductDetailSerializer(read_only=True, many=True)
-    images = ProductImageSerializer(many = True)
+    images = ProductImageSerializer(many=True)
 
     class Meta:
         model = Product
         fields = "__all__"
 
 
-# class ProductAttributeSerializer(serializers.ModelSerializer):
+class ProductAttributeSerializer(serializers.ModelSerializer):
 
-#     class Meta:
-#         model = ProductAttribute
-#         fields = "__all__"
-
-
-# class ProductTypeSerializer(serializers.ModelSerializer):
-#     attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
-#     product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
-
-#     def create(self, validated_data):
-#         validated_data["attribute"] = self.context.get("attribute")
-#         validated_data["product_type"] = self.context.get("product_type")
-#         return super().create(validated_data)
-
-#     class Meta:
-#         model = ProductTypeAttributes
-#         fields = "__all__"
+    class Meta:
+        model = ProductAttribute
+        fields = ['id','name']
 
 
-# class ProductTypeAttributesvaluesSerializer(serializers.ModelSerializer):
-#     type_attr = models.ForeignKey(ProductTypeAttributes, on_delete=models.CASCADE)
-#     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+class ProductTypeAttributesSerializer(serializers.ModelSerializer):
+    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
+    attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
 
-#     def create(self, validated_data):
-#         validated_data["type_attr"] = self.context.get("type_attr")
-#         validated_data["product"] = self.context.get("product")
-#         return super().create(validated_data)
+    def create(self, validated_data):
+        validated_data["attribute"] = self.context.get("attribute")
+        validated_data["product_type"] = self.context.get("product_type")
+        return super().create(validated_data)
 
-#     class Meta:
-#         model = ProductTypeAttributesValues
-#         fields = "__all__"
+    class Meta:
+        model = ProductTypeAttributes
+        fields = "__all__"
+
+
+class ProductAttributesvaluesSerializer(serializers.ModelSerializer):
+    product_attr = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    def create(self, validated_data):
+        validated_data["product_attr"] = self.context.get("product_attr")
+        validated_data["product"] = self.context.get("product")
+        return super().create(validated_data)
+
+    class Meta:
+        model = ProductAttributeValues
+        fields = "__all__"

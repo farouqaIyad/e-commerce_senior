@@ -1,24 +1,31 @@
-version: "3.8"
+version: "3.8"  # Specify your desired docker-compose version
 
 services:
-
-  pgdb:
-    container_name: pgdb_ecommerce
-    image: postgres
-    restart: always
+  postgres:
+    image: ankane/pgvector:latest  # Use the latest ankane/pgvector image
     ports:
-      - "5432:5432"
+      - "5432:5432"  # Map container port 5432 to host port 5432
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres  # Set the username for the database
+      - POSTGRES_PASSWORD=postgres  # Set the password for the database
+      - POSTGRES_DB=postgres  # Set the name of the database
 
-  esearch:
-    container_name: search
-    image: elasticsearch:7.17.9
-    environment:
-      - discovery.type=single-node
-    ports:
-      - "9200:9200"
+# Optional: Volumes to persist databas  e data
+# volumes:
+#   - postgres_data:/var/lib/postgresql/data
+
+# Additional services (if needed)
+# ...
+
+    
+
+
+  # esearch:
+  #   container_name: search
+  #   image: elasticsearch:7.17.9
+  #   environment:
+  #     - discovery.type=single-node
+  #   ports:
+  #     - "9200:9200"
 
 

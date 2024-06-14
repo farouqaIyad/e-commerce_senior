@@ -1,12 +1,10 @@
-from mptt.models import MPTTModel, TreeForeignKey, TreeManyToManyField
 from django.utils.translation import gettext_lazy as _
+from pgvector.django import VectorField, HnswIndex
+from mptt.models import MPTTModel, TreeForeignKey
+from Users.models import User, SupplierProfile
 from django.utils.text import slugify
 from .utils import generate_sku
-from Users.models import User, SupplierProfile
 from django.db import models
-
-
-
 
 
 class Category(MPTTModel):
@@ -44,6 +42,9 @@ class Category(MPTTModel):
 class ProductType(models.Model):
     name = models.CharField(max_length=50, unique=True)
     product_size = models.ForeignKey("ProductSize", on_delete=models.CASCADE, null=True)
+    attributes = models.ManyToManyField(
+        "ProductAttribute", through="ProductTypeAttributes"
+    )
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
@@ -75,7 +76,6 @@ class ProductColor(models.Model):
         db_table = "colors"
 
 
-
 class Product(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False, blank=False)
     slug = models.SlugField(max_length=150, unique=True, null=False, blank=False)
@@ -87,7 +87,7 @@ class Product(models.Model):
 
     supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
-    date_created = models.DateTimeField(auto_now_add=True, editable=False)
+    date_created = models.DateField(auto_now_add=True, editable=False)
     main_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -103,11 +103,23 @@ class Product(models.Model):
 
     main_image = models.CharField(unique=False, max_length=255)
 
-    objects = models.Manager()
+    embedding = VectorField(dimensions=384, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         db_table = "product"
         ordering = ["-date_created"]
+        indexes = [
+            HnswIndex(
+                name="product_embedding_hnsw_index",
+                fields=["embedding"],
+                m=16,
+                ef_construction=64,
+                opclasses=["vector_cosine_ops"],
+            )
+        ]
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -175,3 +187,27 @@ class ProductImage(models.Model):
             self.product.main_image = self.image_url
             self.product.save()
         return super().save(*args, **kwargs)
+
+
+class ProductAttribute(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        db_table = "product_attribute"
+
+
+class ProductTypeAttributes(models.Model):
+    type_attr = models.ForeignKey(ProductType, on_delete=models.CASCADE)
+    attr = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "product_type_attributes"
+
+
+class ProductAttributeValues(models.Model):
+    product_attr = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    value = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = "product_attribute_values"

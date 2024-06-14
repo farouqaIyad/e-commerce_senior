@@ -43,6 +43,7 @@ def start_promotion(self, promotion_id):
             product_detail.save()
     return "promotion applied to all products details"
 
+
 @shared_task(bind=True)
 def end_promotion(self, promotion_id):
     with transaction.atomic():

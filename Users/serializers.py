@@ -7,7 +7,6 @@ from .models import (
     SupplierProfile,
     CustomerProfile,
     DriverProfile,
-    CustomerSupportProfile,
 )
 
 
@@ -38,7 +37,7 @@ class SupplierProfileSerializer(serializers.ModelSerializer):
             "commercial_recored",
             "is_approved",
         ]
-        read_only_fields = ["is_approved"]
+        read_only_fields = ["is_approved", "user"]
 
 
 class DriverProfileSerializer(serializers.ModelSerializer):
@@ -48,7 +47,7 @@ class DriverProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_approved"]
 
 
-class CustomerSupportProfileSerializer(serializers.ModelSerializer):
+class CustomerProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomerSupportProfile
-        fields = ["id", "user"]
+        model = CustomerProfile
+        fields = ["id", "user", "phone_number"]

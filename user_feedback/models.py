@@ -21,3 +21,10 @@ class Review(models.Model):
             self.product.average_rating += self.rating / self.product.reviews_count
             self.product.save()
         return super().save(*args, **kwargs)
+
+
+class Returnal(models.Model):
+    pass
+
+
+# remember to add choices to user to choose from for the reason of returnal and maybe leave a place to say something !

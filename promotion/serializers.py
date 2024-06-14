@@ -12,8 +12,8 @@ class CouponSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Coupon
-        fields = ["name", "coupon_code", "discount_value", "user_max_use","supplier"]
-        write_only_fields = ['coupon_code']
+        fields = ["name", "coupon_code", "discount_value", "user_max_use", "supplier"]
+        write_only_fields = ["coupon_code"]
 
 
 class PromotionSerializer(serializers.ModelSerializer):
@@ -33,3 +33,4 @@ class ProductOnPromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductOnPromotion
         fields = "__all__"
+        execule = ["description"]
