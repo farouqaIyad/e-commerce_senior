@@ -403,7 +403,7 @@ class StartUpList(APIView):
         new_products = Product.objects.order_by("date_created")[:20]
 
         new_products_serializer = ProductSerializer(instance=new_products, many=True)
-        highest_rating_products = Product.objects.order_by("average_rating")[:20]
+        highest_rating_products = Product.objects.order_by("-average_rating")[:20]
         highest_rating_products_serializer = ProductSerializer(
             instance=highest_rating_products, many=True
         )

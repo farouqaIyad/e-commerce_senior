@@ -13,6 +13,5 @@ urlpatterns = [
     path("", include("search_and_filter.urls")),
     path("", include("promotion.urls")),
     path("", include("driver.urls")),
-    path("chat/", include("chat.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
 ]

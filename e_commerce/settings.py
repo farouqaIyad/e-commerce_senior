@@ -46,7 +46,6 @@ AUTH_USER_MODEL = "Users.User"
 # Application definition
 
 INSTALLED_APPS = [
-    # "chat",
     # 'daphne' ,
     "django.contrib.admin",
     "django.contrib.auth",
