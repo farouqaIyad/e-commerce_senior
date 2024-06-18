@@ -7,6 +7,7 @@ from rest_framework import status
 from django.http import Http404
 from .models import Wishlist, ProductDetail
 from Users.models import CustomerProfile
+from catalog.serializers import ProductDetailSerializer
 
 
 class WishlistList(APIView):
@@ -28,6 +29,7 @@ class WishlistList(APIView):
         product = self.get_object(product_detail)
         user_wishlist.product.add(product)
         user_wishlist.save()
+
         return Response(
             {"message": "added to wishlist"}, status=status.HTTP_201_CREATED
         )
@@ -35,8 +37,10 @@ class WishlistList(APIView):
     def get(self, request, format=None):
         customer = CustomerProfile.objects.get(user_id=request.user.id)
         user_wishlist = Wishlist.objects.get(customer=customer)
-        serializer = WishlistSerializer(instance=user_wishlist)
-        return Response(serializer.data)
+        products_qs = WishlistSerializer.setup_eager_loading(user_wishlist.product)
+        return Response(
+            {"products": WishlistSerializer(instance=products_qs, many=True).data}
+        )
 
 
 class WishlistDetail(APIView):

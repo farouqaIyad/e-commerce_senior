@@ -18,7 +18,12 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         if self.product:
             self.product.reviews_count += 1
-            self.product.average_rating += self.rating / self.product.reviews_count
+            self.product.average_rating = (
+                (
+                    (self.product.reviews_count - 1) * self.product.average_rating
+                    + self.rating
+                )
+            ) / self.product.reviews_count
             self.product.save()
         return super().save(*args, **kwargs)
 

@@ -1,16 +1,17 @@
-from catalog.serializers import ProductDetailSerializer, Product
+from catalog.serializers import ProductDetail
 from rest_framework import serializers
-from .models import Wishlist
 
 
 class WishlistSerializer(serializers.ModelSerializer):
-    products = serializers.SerializerMethodField()
+    product = serializers.StringRelatedField()
+    color = serializers.StringRelatedField(many=True)
+    size = serializers.StringRelatedField(many=True)
 
-    def get_products(self, obj):
-        products = obj.product.all()
-        serializer = ProductDetailSerializer(products, many=True)
-        return serializer.data
+    @staticmethod
+    def setup_eager_loading(queryset):
+        queryset = queryset.prefetch_related("color", "size", "product")
+        return queryset
 
     class Meta:
-        model = Wishlist
-        fields = ["products"]
+        model = ProductDetail
+        fields = ["product", "id", "color", "size", "price", "sale_price"]

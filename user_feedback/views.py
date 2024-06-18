@@ -15,7 +15,8 @@ class ReviewList(APIView):
         product_id = request.data["product"]
         product = Product.objects.get(id=product_id)
         serializer = ReviewSerializer(
-            data=request.data, context={"customer": request.user, "product": product}
+            data=request.data,
+            context={"customer": request.user.customerprofile, "product": product},
         )
         if serializer.is_valid():
             serializer.save()

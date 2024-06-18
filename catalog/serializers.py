@@ -73,7 +73,6 @@ class ProductSizeValueSerializer(serializers.ModelSerializer):
         model = Size_Value
         fields = ["id", "value", "size"]
         read_only_fields = ["id"]
-        depth = 1
 
 
 class ProductColorSerializer(serializers.ModelSerializer):
@@ -128,6 +127,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "slug",
+            "description",
             "main_price",
             "main_sale_price",
             "average_rating",
@@ -137,8 +137,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
-    color = ProductColorSerializer(many=True, read_only=True)
-    size = ProductSizeValueSerializer(read_only=True, many=True)
+    color = serializers.StringRelatedField(many=True)
+    size = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = ProductDetail
@@ -151,9 +151,38 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "sale_price",
             "is_active",
             "is_main",
-            "product",
         ]
-        depth = 1
+
+
+class ProductWithReviewsSerializer(serializers.ModelSerializer):
+    product_detail = ProductDetailSerializer(read_only=True, many=True)
+    review_set = ReviewSerializer(read_only=True, many=True)
+
+    @staticmethod
+    def setup_eager_loading(queryset):
+        queryset = queryset.prefetch_related(
+            "review_set",
+            "product_detail",
+            "product_detail__color",
+            "product_detail__size",
+        )
+        return queryset
+
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "main_price",
+            "main_sale_price",
+            "average_rating",
+            "reviews_count",
+            "main_image",
+            "product_detail",
+            "review_set",
+        ]
 
 
 class ProductPageSerializer(serializers.ModelSerializer):
@@ -162,14 +191,15 @@ class ProductPageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = "__all__"
+        # fields = "__all__"
+        exclude = ("embedding",)
 
 
 class ProductAttributeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductAttribute
-        fields = ['id','name']
+        fields = ["id", "name"]
 
 
 class ProductTypeAttributesSerializer(serializers.ModelSerializer):

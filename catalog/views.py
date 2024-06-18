@@ -11,7 +11,8 @@ from .serializers import (
     ProductPageSerializer,
     ProductAttributeSerializer,
     ProductTypeAttributesSerializer,
-    ProductAttributesvaluesSerializer
+    ProductAttributesvaluesSerializer,
+    ProductWithReviewsSerializer,
 )
 from .models import (
     Category,
@@ -25,7 +26,7 @@ from .models import (
     SupplierProfile,
     ProductAttribute,
     ProductAttributeValues,
-    ProductTypeAttributes
+    ProductTypeAttributes,
 )
 from permissions import IsSupplierOrReadOnly, IsAdminOrReadOnly
 from rest_framework.response import Response
@@ -37,6 +38,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from promotion.serializers import Promotion, PromotionSerializer
 from .tasks import save_product_details
+from user_feedback.serializers import Review, ReviewSerializer
 
 
 class CategoryList(APIView):
@@ -288,9 +290,24 @@ class ProductDetailView(APIView):
 class ProductDetailList(APIView):
 
     def get(self, request, slug, format=None):
-        product = Product.objects.filter(slug=slug).first()
-        serializer = ProductPageSerializer(instance=product)
-        return Response(serializer.data)
+        # product_details = ProductDetail.objects.filter(product=product)
+        product = Product.objects.filter(slug=slug)
+        product = ProductWithReviewsSerializer.setup_eager_loading(product)
+        product_serializer = ProductWithReviewsSerializer(product, many=True)
+        # product_details_serializer = ProductDetailSerializer.setup_eager_loading(
+        #     product_details
+        # )
+        # reviews = Review.objects.filter(product = product)
+        # review_serializer = ReviewSerializer(instance=reviews, many = True)
+        return Response(
+            {
+                "product": product_serializer.data,
+                # "product_details": ProductDetailSerializer(
+                #     product_details_serializer, many=True
+                # ).data,
+                # "reviews":review_serializer.data
+            }
+        )
 
 
 class ProductDetailDetail(APIView):
@@ -311,7 +328,8 @@ class ProductDetailDetail(APIView):
         product_detail = ProductDetail.objects.get(pk=pk)
         product_detail.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+
 class ProductAttributesList(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
@@ -323,29 +341,35 @@ class ProductAttributesList(APIView):
                 {"message": "created attribute"}, status=status.HTTP_201_CREATED
             )
         return Response(
-            {"message": "failed to create attribute"}, status=status.HTTP_400_BAD_REQUEST
+            {"message": "failed to create attribute"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
+
 
 class ProductAttributesDetail(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
-    def delete(self, request, pk,format=None):
-        attribute = ProductAttribute.objects.get(pk = pk)
+    def delete(self, request, pk, format=None):
+        attribute = ProductAttribute.objects.get(pk=pk)
         try:
             attribute.delete()
-            return Response(
-                {"message": "deleted"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "deleted"}, status=status.HTTP_204_NO_CONTENT)
         except:
-            return Response({"message":"failed to delete"},status=status.HTTP_404_NOT_FOUND)
-        
+            return Response(
+                {"message": "failed to delete"}, status=status.HTTP_404_NOT_FOUND
+            )
+
 
 class ProductTypeAttributesList(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
     def post(self, request, format=None):
-        product_type = ProductType.objects.get(pk = request.data['product_type'])
-        attribute = ProductAttribute.objects.get(pk = request.data['product_attribute'])
-        serializer = ProductTypeAttributesSerializer(data=request.data,context = {"product_type":product_type,"attribute":attribute})
+        product_type = ProductType.objects.get(pk=request.data["product_type"])
+        attribute = ProductAttribute.objects.get(pk=request.data["product_attribute"])
+        serializer = ProductTypeAttributesSerializer(
+            data=request.data,
+            context={"product_type": product_type, "attribute": attribute},
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(
@@ -354,18 +378,20 @@ class ProductTypeAttributesList(APIView):
         return Response(
             {"message": "failed to add "}, status=status.HTTP_400_BAD_REQUEST
         )
-    
+
+
 class ProductTypeAttributesDetail(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
-    def delete(self, request, pk,format=None):
-        product_type_attribute = ProductTypeAttributes.objects.get(pk = pk)
+    def delete(self, request, pk, format=None):
+        product_type_attribute = ProductTypeAttributes.objects.get(pk=pk)
         try:
             product_type_attribute.delete()
-            return Response(
-                {"message": "deleted"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "deleted"}, status=status.HTTP_204_NO_CONTENT)
         except:
-            return Response({"message":"failed to delete"},status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "failed to delete"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class StartUpList(APIView):

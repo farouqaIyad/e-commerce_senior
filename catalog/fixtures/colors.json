@@ -2,56 +2,56 @@
     {
         "model":  "catalog.productcolor",
         "id ":  "1",
-        "fields":{"color":  "Red"
+        "fields":{"color":  "#FF0000"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "2",
-        "fields":{"color":  "Blue"
+        "fields":{"color":  "#0000FF"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "3",
-        "fields":{"color":  "Green"
+        "fields":{"color":  "#00FF00"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "4",
-        "fields":{"color":  "Yellow"
+        "fields":{"color":  "#FFFF00"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "5",
-        "fields":{"color":  "Orange"
+        "fields":{"color":  "#FFA500"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "6",
-        "fields":{"color":  "Purple"
+        "fields":{"color":  "#800080"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "7",
-        "fields":{"color":  "Pink"
+        "fields":{"color":  "#FFC0CB"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "8",
-        "fields":{"color":  "White"
+        "fields":{"color":  "#FFFFFF"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "9",
-        "fields":{"color":  "Black"
+        "fields":{"color":  "#000000"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "10",
-        "fields":{"color":  "Gray"
+        "fields":{"color":  "#808080"
     }},
     {
         "model":  "catalog.productcolor",
         "id ":  "11",
-        "fields":{"color":  "Brown"
+        "fields":{"color":  "#A52A2A"
     }}
 ]

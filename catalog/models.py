@@ -67,6 +67,9 @@ class Size_Value(models.Model):
         db_table = "size_values"
         unique_together = ("size", "value")
 
+    def __str__(self):
+        return "{}".format(self.value)
+
 
 class ProductColor(models.Model):
 
@@ -74,6 +77,9 @@ class ProductColor(models.Model):
 
     class Meta:
         db_table = "colors"
+
+    def __str__(self):
+        return "{}".format(self.color)
 
 
 class Product(models.Model):
@@ -106,7 +112,7 @@ class Product(models.Model):
     embedding = VectorField(dimensions=384, null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return "{}".format(self.name)
 
     class Meta:
         db_table = "product"
@@ -128,7 +134,7 @@ class Product(models.Model):
 
 
 class ProductDetail(models.Model):
-    sku = models.CharField(max_length=20, unique=True, null=False, blank=True)
+    sku = models.CharField(max_length=20, null=False, blank=True)
     product = models.ForeignKey(
         Product, related_name="product_detail", on_delete=models.CASCADE
     )

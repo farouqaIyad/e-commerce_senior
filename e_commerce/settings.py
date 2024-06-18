@@ -35,7 +35,7 @@ SECRET_KEY = "shit"
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "6e8b-37-48-151-120.ngrok-free.app",
+    "f887-37-48-144-11.ngrok-free.app",
     "donkey-casual-python.ngrok-free.app",
     "127.0.0.1",
 ]
@@ -46,6 +46,8 @@ AUTH_USER_MODEL = "Users.User"
 # Application definition
 
 INSTALLED_APPS = [
+    # "chat",
+    # 'daphne' ,
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -70,11 +72,19 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "django_celery_results",
     "django_celery_beat",
-    "channels",
-    "chat"
+    # "channels",
+    "corsheaders",
+]
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://f887-37-48-144-11.ngrok-free.app:3000",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -113,6 +123,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "e_commerce.wsgi.application"
+# ASGI_APPLICATION = "e_commerce.routing.application"
 
 
 # Database
@@ -129,13 +140,6 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 #     }
 # }
 
-
-def show_toolbar(request):
-    return True
-
-
-DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": show_toolbar}
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -148,8 +152,12 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+def show_toolbar(request):
+    return True
+
+
+DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": show_toolbar}
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -175,8 +183,7 @@ SIMPLE_JWT = {
         days=1
     ),  # Optional: Change refresh token lifetime
 }
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
 
 LANGUAGE_CODE = "en-us"
 
@@ -226,8 +233,11 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
-CHANNEL_LAYERS = {
-    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
-}
-
-ASGI_APPLICATION = 'e_commerce.routing.application'
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             "hosts": [("127.0.0.1", 6379)],
+#         },
+#     },
+# }

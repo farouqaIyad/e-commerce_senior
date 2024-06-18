@@ -7,7 +7,6 @@ from catalog.serializers import ProductSerializer
 from catalog.models import Product, Stock
 from sentence_transformers import SentenceTransformer
 from pgvector.django import CosineDistance
-import json
 
 
 class SearchProduct(APIView, LimitOffsetPagination):
@@ -19,8 +18,9 @@ class SearchProduct(APIView, LimitOffsetPagination):
         query_vector = model.encode(query)
         results = Product.objects.annotate(
             distance=CosineDistance("embedding", query_vector)
-        ).order_by("distance")[:25]
+        ).filter(distance__lte=0.75).order_by("distance")[:25]
         serializer = self.product_serializer(results, many=True)
+        
         return Response(serializer.data)
 
 
@@ -32,30 +32,17 @@ class completion(APIView, LimitOffsetPagination):
         return Response({"message": results})
 
 
-# class change_embedding(APIView):
-#     product_serializer = ProductSerializer
+class change_embedding(APIView):
+    product_serializer = ProductSerializer
 
-#     def get(self, request, format=None):
-#         json_file = r"D:\AA\e-commerce\e_commerce\catalog\fixtures\product_details.json"
-#         try:
-#             # Load existing JSON data
-#             with open(json_file, "r") as f:
-#                 data = json.load(f)
-#         except FileNotFoundError:
-#             return Response({"error": "JSON file not found."}, status=404)
-#         except json.decoder.JSONDecodeError:
-#             return Response({"error": "Invalid JSON format in the file."}, status=400)
-
-#         # Update JSON data with embeddings from the model
-#         for json_product in data:
-#             json_product['fields']['product'] = str(int(json_product['fields']['product']) + 155)
-
-#         # Write updated JSON data back to the file
-#         with open(json_file, "w") as f:
-#             json.dump(data, f, indent=2)  # Add indentation for readability
-#             f.write('\n')
-
-#         return Response({"message": " updated successfully."})
+    def get(self, request, format=None):
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+        all_products = Product.objects.all()
+        for product in all_products:
+            product.embedding = model.encode(product.name)
+            product.save()
+        print(all_products[0].embedding)    
+        return Response({"message": " created embeddings successfully."})
 
 
 class bestsellers(APIView):

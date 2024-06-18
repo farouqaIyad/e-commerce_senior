@@ -176,9 +176,9 @@ class SupplierDetail(APIView):
 class CustomerList(APIView):
 
     def get(self, request, format=None):
-        customer = CustomerProfile.objects.all()
-        serializer = CustomerProfileSerializer(instance=customer, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        customer = CustomerProfile.objects.all()[0]
+        serializer = CustomerProfileSerializer(instance=customer)
+        return Response({"customers": serializer.data}, status=status.HTTP_200_OK)
 
 
 class CustomerDetail(APIView):
