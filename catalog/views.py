@@ -290,22 +290,14 @@ class ProductDetailView(APIView):
 class ProductDetailList(APIView):
 
     def get(self, request, slug, format=None):
-        # product_details = ProductDetail.objects.filter(product=product)
         product = Product.objects.filter(slug=slug)
         product = ProductWithReviewsSerializer.setup_eager_loading(product)
         product_serializer = ProductWithReviewsSerializer(product, many=True)
-        # product_details_serializer = ProductDetailSerializer.setup_eager_loading(
-        #     product_details
-        # )
-        # reviews = Review.objects.filter(product = product)
-        # review_serializer = ReviewSerializer(instance=reviews, many = True)
+        
         return Response(
             {
                 "product": product_serializer.data,
-                # "product_details": ProductDetailSerializer(
-                #     product_details_serializer, many=True
-                # ).data,
-                # "reviews":review_serializer.data
+                
             }
         )
 
