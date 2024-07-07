@@ -8,11 +8,11 @@ from .serializers import (
     ProductSizeSerializer,
     ProductSizeValueSerializer,
     ProductSerializer,
-    ProductPageSerializer,
     ProductAttributeSerializer,
     ProductTypeAttributesSerializer,
     ProductAttributesvaluesSerializer,
     ProductWithReviewsSerializer,
+    StockSerializer,
 )
 from .models import (
     Category,
@@ -38,12 +38,16 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from promotion.serializers import Promotion, PromotionSerializer
 from .tasks import save_product_details
-from user_feedback.serializers import Review, ReviewSerializer
+from decimal import Decimal
+import ast
+from django.db.models import OuterRef, Exists
 
 
+# admin
 class CategoryList(APIView):
 
     def post(self, request, format=None):
+        print(request.data)
         name, parent = request.data.values()
         try:
             if parent:
@@ -87,17 +91,18 @@ class CategoryDetail(APIView):
             return Response({"message": "no children"})
 
     def put(self, request, slug, format=None):
-        category = self.get_object(slug)
+        category = Category.objects.filter(slug=slug).first()
         serializer = CategorySerializer(category, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "category updated"})
         return Response(
-            {"message": "could not update category"}, status=status.HTTP_400_BAD_REQUEST
+            {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
 
     def delete(self, request, slug, format=None):
-        category = self.get_object(slug)
+
+        category = Category.objects.get(pk=request.data["category_id"])
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -184,7 +189,7 @@ class ProductSizeValueDetail(APIView):
                 size__producttype__name=name
             ).select_related("size")
             serializer = ProductSizeValueSerializer(instance=size_values, many=True)
-            return Response({"message": serializer.data})
+            return Response(serializer.data)
         except:
             return Response({"message": "an error occured"})
 
@@ -207,119 +212,6 @@ class ProductColorList(APIView):
         colors = ProductColor.objects.all()
         serailizer = ProductColorSerializer(instance=colors, many=True)
         return Response(serailizer.data)
-
-
-class ProductList(APIView):
-    permission_classes = [IsSupplierOrReadOnly]
-    # parser_classes = [MultiPartParser, FormParser]
-
-    def post(self, request, format=None):
-        try:
-            category_id = request.data.get("category")
-            product_type_id = request.data.get("product_type")
-            colors_ids = request.data.get("colors", [])
-            sizes_ids = request.data.get("sizes", [])
-            quantity_in_stock = request.data.get("quantitiy_in_stock", [])
-            prices = request.data.get("prices", [])
-            # images = request.data.get("images", [])
-
-            category = Category.objects.get(id=category_id)
-            product_type = ProductType.objects.get(id=product_type_id)
-            supplier = SupplierProfile.objects.get(user=request.user)
-            serializer = ProductRegisterSerializer(
-                data=request.data,
-                context={
-                    "supplier": supplier,
-                    "category": category,
-                    "product_type": product_type,
-                },
-            )
-            if serializer.is_valid():
-                with transaction.atomic():
-                    product = serializer.save()
-                    save_product_details.delay(
-                        product.id, quantity_in_stock, prices, colors_ids, sizes_ids
-                    )
-                return Response(
-                    {"message": "Product created"}, status=status.HTTP_201_CREATED
-                )
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except (Category.DoesNotExist, ProductType.DoesNotExist) as e:
-            return Response(
-                {"message": "One or more entities not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception as e:
-            return Response(
-                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-class ProductDetailView(APIView):
-    permission_classes = [IsSupplierOrReadOnly]
-
-    def get(self, request, slug, format=None):
-        category = Category.objects.filter(slug=slug).first()
-        if category.is_leaf_node():
-            products = Product.objects.filter(category=category)
-        else:
-            child_categories = category.get_descendants()
-            products = Product.objects.filter(category__in=child_categories)
-        serializer = ProductSerializer(instance=products, many=True)
-        return Response(serializer.data)
-
-    def put(self, request, slug, format=None):
-        product = Product.objects.filter(slug=slug)
-        serializer = ProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "product updated"})
-        return Response(
-            {"message": "failed to update"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    def delete(self, request, slug, format=None):
-        product = Product.objects.filter(slug=slug).first()
-        product.delete()
-        return Response(
-            {"message": "product deleted"}, status=status.HTTP_204_NO_CONTENT
-        )
-
-
-class ProductDetailList(APIView):
-
-    def get(self, request, slug, format=None):
-        product = Product.objects.filter(slug=slug)
-        product = ProductWithReviewsSerializer.setup_eager_loading(product)
-        product_serializer = ProductWithReviewsSerializer(product, many=True)
-        
-        return Response(
-            {
-                "product": product_serializer.data,
-                
-            }
-        )
-
-
-class ProductDetailDetail(APIView):
-    permission_classes = [IsSupplierOrReadOnly]
-
-    def put(self, request, pk, format=None):
-        product_detail = ProductDetail.objects.get(pk=pk)
-        serializer = ProductDetailSerializer(product_detail, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "product detail updated"})
-        return Response(
-            {"message": "couldn't update product details"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def delete(self, request, pk, format=None):
-        product_detail = ProductDetail.objects.get(pk=pk)
-        product_detail.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProductAttributesList(APIView):
@@ -386,16 +278,179 @@ class ProductTypeAttributesDetail(APIView):
             )
 
 
+# supplier
+
+
+class ProductList(APIView):
+    permission_classes = [IsSupplierOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, format=None):
+        try:
+            category_id = request.data.get("category")
+            product_type_id = request.data.get("product_type")
+            colors_ids = request.data.get("colors", [])
+            sizes_ids = request.data.get("sizes", [])
+            quantity_in_stock = request.data.get("quantitiy_in_stock", [])
+            prices_str = request.data.get("prices", [])
+            prices = ast.literal_eval(prices_str)
+            colors_ids = ast.literal_eval(colors_ids)
+            sizes_ids = ast.literal_eval(sizes_ids)
+            quantity_in_stock = ast.literal_eval(quantity_in_stock)
+            category = Category.objects.get(id=category_id)
+            product_type = ProductType.objects.get(id=product_type_id)
+            supplier = SupplierProfile.objects.get(user=request.user)
+            serializer = ProductRegisterSerializer(
+                data=request.data,
+                context={
+                    "supplier": supplier,
+                    "category": category,
+                    "product_type": product_type,
+                },
+            )
+            if serializer.is_valid():
+                with transaction.atomic():
+                    product = serializer.save()
+                    save_product_details.delay(
+                        product.id, quantity_in_stock, prices, colors_ids, sizes_ids
+                    )
+                return Response(
+                    {"message": "Product created"}, status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except (Category.DoesNotExist, ProductType.DoesNotExist) as e:
+            return Response(
+                {"message": "One or more entities not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class ProductDetailView(APIView):
+    permission_classes = [IsSupplierOrReadOnly]
+
+    def get(self, request, slug, format=None):
+        category = Category.objects.filter(slug=slug).first()
+        if category.is_leaf_node():
+            products = Product.objects.with_wishlist_status(request.user).filter(
+                category=category
+            )
+
+        else:
+            child_categories = category.get_descendants()
+            products = Product.objects.with_wishlist_status(request.user).filter(
+                category__in=child_categories
+            )
+
+        serializer = ProductSerializer(instance=products, many=True)
+        return Response(serializer.data)
+
+    def put(self, request, slug, format=None):
+        product = Product.objects.filter(slug=slug)
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "product updated"})
+        return Response(
+            {"message": "failed to update"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, slug, format=None):
+        product = Product.objects.filter(slug=slug).first()
+        product.delete()
+        return Response(
+            {"message": "product deleted"}, status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class ProductDetailList(APIView):
+
+    def get(self, request, slug, format=None):
+        product = Product.objects.with_wishlist_status(request.user).filter(slug=slug)
+        product = ProductWithReviewsSerializer.setup_eager_loading(product)
+        product_serializer = ProductWithReviewsSerializer(product[0])
+
+        return Response(
+            {
+                "product": product_serializer.data,
+            }
+        )
+
+
+class ProductDetailDetail(APIView):
+    permission_classes = [IsSupplierOrReadOnly]
+
+    def put(self, request, pk, format=None):
+        product_detail = ProductDetail.objects.get(pk=pk)
+        serializer = ProductDetailSerializer(product_detail, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "product detail updated"})
+        return Response(
+            {"message": "couldn't update product details"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, pk, format=None):
+        product_detail = ProductDetail.objects.get(pk=pk)
+        product_detail.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SupplierPageList(APIView):
+    permission_classes = [IsSupplierOrReadOnly]
+
+    def get(self, request, format=None):
+        supplier = request.user.supplierprofile
+        products = supplier.product_set.all()
+        serializer = ProductSerializer(instance=products, many=True)
+        return Response(serializer.data)
+
+
+class StockList(APIView):
+
+    def get(self, request, format=None):
+        stocks = Stock.objects.filter(product_detail__id=request.data["product_detail"])
+        serializer = StockSerializer(instance=stocks, many=True)
+        return Response({"stocks": serializer.data})
+
+
+class StockDetail(APIView):
+    permission_classes = [IsSupplierOrReadOnly]
+
+    def put(self, request, pk, format=None):
+        stock = Stock.objects.get(id=pk)
+        serializer = StockSerializer(instance=stock, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": {"stock data updated"}})
+
+    def delete(self, request, pk, format=None):
+        stocks = Stock.objects.get(id=pk)
+        stocks.delete()
+
+
+# customer
+
+
 class StartUpList(APIView):
     def get(self, request, format=None):
         category = Category.objects.filter(level=0)
         serializer = CategorySerializer(instance=category, many=True)
         promotion = Promotion.objects.all()
         promotion_serializer = PromotionSerializer(instance=promotion, many=True)
-        new_products = Product.objects.order_by("date_created")[:20]
+        new_products = Product.objects.with_wishlist_status(request.user).order_by(
+            "date_created"
+        )[:20]
 
         new_products_serializer = ProductSerializer(instance=new_products, many=True)
-        highest_rating_products = Product.objects.order_by("-average_rating")[:20]
+        highest_rating_products = Product.objects.with_wishlist_status(
+            request.user
+        ).order_by("-average_rating")[:20]
         highest_rating_products_serializer = ProductSerializer(
             instance=highest_rating_products, many=True
         )

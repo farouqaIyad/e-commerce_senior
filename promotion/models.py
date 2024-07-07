@@ -3,7 +3,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from catalog.models import Product, ProductDetail
-from Users.models import User, CustomerProfile, SupplierProfile
+from Users.models import User, CustomerProfile
+from supplier.models import SupplierProfile
 
 
 class Coupon(models.Model):
@@ -43,7 +44,9 @@ class Promotion(models.Model):
     is_active = models.BooleanField(default=False)
     # celery well use this field
     is_scheduled = models.BooleanField(default=True)
-    image_url = models.CharField(max_length=255, blank=True)
+    image_url = models.ImageField(
+        unique=False, upload_to="promotions", default="promotions/default.png"
+    )
 
     def clean(self):
         if self.time_start > self.time_end:

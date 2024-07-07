@@ -11,7 +11,7 @@ class ShoppingcartAndOrderConfig(AppConfig):
         from .models import ShoppingCartProducts, CustomerProfile
 
         request_finished.connect(
-            signals.shopping_cart_products_post_save, sender=ShoppingCartProducts
+            signals.shopping_cart_products_pre_save, sender=ShoppingCartProducts
         )
         request_finished.connect(
             signals.shopping_cart_product_pre_delete, sender=ShoppingCartProducts

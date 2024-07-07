@@ -17,8 +17,7 @@ from .models import (
     ProductOnPromotion,
     ProductDetail,
 )
-from rest_framework.permissions import IsAuthenticated
-from django.core.serializers import serialize
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class CouponList(APIView):
@@ -35,9 +34,9 @@ class CouponList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
-        supplier_profile = SupplierProfile.objects.get(pk=request.user)
-        coupons = SupplierProfile.objects.filter(supplier=supplier_profile)
+        coupons = Coupon.objects.filter(supplier=request.user.supplierprofile)
         serializer = CouponSerializer(instance=coupons, many=True)
+        return Response(serializer.data)
 
 
 class CouponDetail(APIView):
@@ -47,10 +46,28 @@ class CouponDetail(APIView):
         serializer = CouponSerializer(instance=coupon)
         return Response(serializer.data)
 
+    def put(self, request, pk, format=None):
+        coupon = Coupon.objects.get(pk=pk)
+        serializer = CouponSerializer(instance=coupon,data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "coupon updated"})
+        return Response(
+            {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    def delete(self,request,pk,format = None):
+        coupon = Coupon.objects.get(pk=pk)
+        coupon.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 
 class PromotionList(APIView):
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, format=None):
+        print(request.data)
         serializer = PromotionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -60,7 +77,7 @@ class PromotionList(APIView):
     def get(self, request, format=None):
         promotions = Promotion.objects.all()
         serializer = PromotionSerializer(instance=promotions, many=True)
-        return Response(serializer.data)
+        return Response({"promotions": serializer.data})
 
 
 class PromotionDetail(APIView):
@@ -68,17 +85,21 @@ class PromotionDetail(APIView):
         promotion = Promotion.objects.get(pk=pk)
         serializer = PromotionSerializer(instance=promotion, data=request.data)
         if serializer.is_valid():
-            serialize.save()
+            serializer.save()
             return Response({"message": "promotion updated"})
         return Response(
             {"message": "failed to update"}, status=status.HTTP_400_BAD_REQUEST
         )
+    def delete(self,request,pk,format = None):
+        promotion = Promotion.objects.get(pk=pk)
+        promotion.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProductOnPromotionList(APIView):
     def post(self, request, pk, format=None):
         products = request.data.get("products", [])
-        products = Product.active_products.filter(pk__in=products)
+        products = Product.objects.filter(pk__in=products)
         promotion = Promotion.objects.get(pk=pk)
         with transaction.atomic():
             for product in products:
@@ -86,8 +107,6 @@ class ProductOnPromotionList(APIView):
         return Response({"Message": "product added to promotions"})
 
     def get(self, request, pk, format=None):
-        products = Product.active_products.filter(
-            products_on_promotion__promotion_id=pk
-        )
+        products = Product.objects.filter(products_on_promotion__promotion_id=pk)
         serializer = ProductSerializer(instance=products, many=True)
         return Response(serializer.data)

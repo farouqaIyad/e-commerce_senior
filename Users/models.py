@@ -20,20 +20,6 @@ class User(AbstractUser):
             return super().save(*args, **kwargs)
 
 
-class SupplierManager(BaseUserManager):
-    def get_queryset(self, *args, **kwargs):
-        results = super().get_queryset(*args, **kwargs)
-        return results.filter(role=User.Role.SUPPLIER)
-
-
-class Supplier(User):
-    base_role = User.Role.SUPPLIER
-    supplier = SupplierManager()
-
-    class Meta:
-        proxy = True
-
-
 class CustomerManager(BaseUserManager):
     def get_queryset(self, *args, **kwargs):
         results = super().get_queryset(*args, **kwargs)
@@ -76,20 +62,12 @@ class CustomerSupport(User):
         proxy = True
 
 
-class SupplierProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    brand_name = models.CharField(max_length=255, blank=False, null=False)
-    brand_location = models.CharField(max_length=255)
-    commercial_recored = models.CharField(max_length=255)
-    is_approved = models.BooleanField(default=False)
-
-    class Meta:
-        db_table = "supplier"
-
-
 class CustomerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15, unique=True)
+
+    def __str__(self):
+        return "{}".format(self.user.get_full_name())
 
 
 class DriverProfile(models.Model):

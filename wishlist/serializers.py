@@ -1,9 +1,10 @@
-from catalog.serializers import ProductDetail
 from rest_framework import serializers
+from catalog.serializers import UndetailedProductSerializer, ProductDetail
+from .models import Wishlist
 
 
 class WishlistSerializer(serializers.ModelSerializer):
-    product = serializers.StringRelatedField()
+    product = UndetailedProductSerializer(read_only=True)
     color = serializers.StringRelatedField(many=True)
     size = serializers.StringRelatedField(many=True)
 

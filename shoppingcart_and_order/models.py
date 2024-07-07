@@ -24,6 +24,9 @@ class ShoppingCart(models.Model):
     class Meta:
         db_table = "shoppingcart"
 
+    def __str__(self, *args, **kwargs):
+        return "{}".format(self.total_price)
+
 
 class ShoppingCartProducts(models.Model):
     shopping_cart = models.ForeignKey(

@@ -6,6 +6,7 @@ from django.db import transaction
 from catalog.models import ProductDetail, ProductColor, Size_Value, Stock, Product
 from rest_framework.response import Response
 from rest_framework import status
+import ast
 
 
 @shared_task(bind=True)
@@ -15,10 +16,11 @@ def save_product_details(
     Bool_value = True
     product_details = []
     product = Product.objects.get(pk=product)
+
     for i in range(len(quantity_in_stock)):
 
         product_detail = ProductDetail.objects.create(
-            product=product, is_main=Bool_value, price=prices[i]
+            product=product, is_main=Bool_value, price=Decimal(prices[i])
         )
 
         color_id = colors_ids[i] if i < len(colors_ids) else None

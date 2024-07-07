@@ -12,11 +12,17 @@ class CouponSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Coupon
-        fields = ["name", "coupon_code", "discount_value", "user_max_use", "supplier"]
+        fields = [
+            "name",
+            "coupon_code",
+            "discount_value",
+            "user_max_use",
+        ]
         write_only_fields = ["coupon_code"]
 
 
 class PromotionSerializer(serializers.ModelSerializer):
+    image_url = serializers.ImageField(required=True)
 
     class Meta:
         model = Promotion

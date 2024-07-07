@@ -34,11 +34,7 @@ SECRET_KEY = "shit"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "f887-37-48-144-11.ngrok-free.app",
-    "donkey-casual-python.ngrok-free.app",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = ["donkey-casual-python.ngrok-free.app", "localhost", "127.0.0.1"]
 
 
 AUTH_USER_MODEL = "Users.User"
@@ -54,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
+    "django.contrib.sites",
     # local applications
     "shoppingcart_and_order.apps.ShoppingcartAndOrderConfig",
     "user_feedback.apps.UserFeedbackConfig",
@@ -63,23 +60,61 @@ INSTALLED_APPS = [
     "wishlist",
     "address",
     "promotion",
+    "supplier",
     # external applications
     "rest_framework_simplejwt",
     # "django_elasticsearch_dsl",
+    "corsheaders",
     "rest_framework",
     "mptt",
     "debug_toolbar",
     "django_celery_results",
     "django_celery_beat",
+    "django_extensions",
     # "channels",
-    "corsheaders",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
 
+
+GRAPH_MODELS = {
+    "all_applications": True,
+    "group_models": True,
+}
+SITE_ID = 3
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://f887-37-48-144-11.ngrok-free.app:3000",
+    # "http://e679-37-48-147-221.ngrok-free.app:3000",
+]
+
+# CORS_ALLOW_HEADERS = [
+#     'dataserviceversion',
+#     # Add other headers here as needed
+# ]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_METHODS = [
+#     'DELETE',
+#     'GET',
+#     'OPTIONS',
+#     'PATCH',
+#     'POST',
+#     'PUT',
+# ]
+
+CORS_ALLOW_HEADERS = [
+    "ngrok-skip-browser-warning",
+    "Content-Type",
+    "authorization",
 ]
 
 MIDDLEWARE = [
@@ -197,7 +232,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -240,3 +276,4 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 #         },
 #     },
 # }
+# ASGI_APPLICATION = 'yourprojectname.asgi.application'

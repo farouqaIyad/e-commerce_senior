@@ -1,10 +1,13 @@
 from django.utils.translation import gettext_lazy as _
 from pgvector.django import VectorField, HnswIndex
 from mptt.models import MPTTModel, TreeForeignKey
-from Users.models import User, SupplierProfile
+from Users.models import User
 from django.utils.text import slugify
 from .utils import generate_sku
 from django.db import models
+from supplier.models import SupplierProfile
+from sentence_transformers import SentenceTransformer
+from django.db.models import OuterRef, Exists
 
 
 class Category(MPTTModel):
@@ -82,6 +85,20 @@ class ProductColor(models.Model):
         return "{}".format(self.color)
 
 
+class ProductManager(models.Manager):
+
+    def with_wishlist_status(self, user):
+        from wishlist.models import Wishlist
+
+        return self.get_queryset().annotate(
+            in_wishlist=Exists(
+                Wishlist.objects.filter(
+                    product__product_id=OuterRef("pk"), customer=user.customerprofile
+                )
+            )
+        )
+
+
 class Product(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False, blank=False)
     slug = models.SlugField(max_length=150, unique=True, null=False, blank=False)
@@ -111,6 +128,8 @@ class Product(models.Model):
 
     embedding = VectorField(dimensions=384, null=True, blank=True)
 
+    objects = ProductManager()
+
     def __str__(self):
         return "{}".format(self.name)
 
@@ -130,6 +149,8 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+            model = SentenceTransformer("all-MiniLM-L6-v2")
+            self.embedding = model.encode(self.name)
         return super().save(*args, **kwargs)
 
 
@@ -167,6 +188,9 @@ class ProductDetail(models.Model):
 
         return super().save(*args, **kwargs)
 
+    def __str__(self):
+        return "{}-{}-{}".format(self.sku, self.color, self.size)
+
 
 class Stock(models.Model):
     product_detail = models.OneToOneField(
@@ -185,7 +209,7 @@ class ProductImage(models.Model):
     )
     is_main = models.BooleanField(default=False)
     image_url = models.ImageField(
-        unique=False, upload_to="images/", default="images/default.png"
+        unique=False, upload_to="products", default="products/default.png"
     )
 
     def save(self, *args, **kwargs):

@@ -10,12 +10,16 @@ from .models import (
     ProductAttribute,
     ProductAttributeValues,
     ProductTypeAttributes,
+    Stock,
 )
+from django.conf import settings
+
 from user_feedback.serializers import ReviewSerializer
 from rest_framework import serializers
 from django.db.models import Avg
-from Users.models import SupplierProfile
 from django.db import models
+from supplier.models import SupplierProfile
+from django.contrib.sites.models import Site
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -36,7 +40,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "is_active",
             "image_url",
         ]
-        read_only_fields = ["id", "is_leaf"]
+        read_only_fields = ["id", "is_leaf", "slug"]
 
 
 class ProductTypeSerializer(serializers.ModelSerializer):
@@ -51,7 +55,7 @@ class ProductTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductType
-        fields = ["name", "product_size", "category"]
+        fields = ["name", "product_size"]
         depth = 1
 
 
@@ -82,17 +86,10 @@ class ProductColorSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductImageSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ProductImage
-        fields = ["id", "image_url"]
-
-
 class ProductRegisterSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(
-            max_length=6, allow_empty_file=False, use_url=False
+            max_length=1000, allow_empty_file=False, use_url=False
         ),
         write_only=True,
     )
@@ -105,21 +102,21 @@ class ProductRegisterSerializer(serializers.ModelSerializer):
         validated_data["product_type"] = self.context.get("product_type")
         uploaded_images = validated_data.pop("uploaded_images")
         product = super().create(validated_data)
+        boolean = True
         for image in uploaded_images:
-            ProductImage.objects.create(image, product)
+            ProductImage.objects.create(
+                image_url=image, product=product, is_main=boolean
+            )
+            boolean = False
         return product
 
     class Meta:
         model = Product
-        fields = [
-            "name",
-            "description",
-            "category",
-            "product_type",
-        ]
+        fields = ["name", "description", "category", "product_type", "uploaded_images"]
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    in_wishlist = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Product
@@ -127,12 +124,12 @@ class ProductSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "slug",
-            "description",
             "main_price",
             "main_sale_price",
             "average_rating",
             "reviews_count",
             "main_image",
+            "in_wishlist",
         ]
 
 
@@ -154,9 +151,25 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    def get_image_url(self, obj):
+        return "http://%s%s%s" % (
+            Site.objects.get_current().domain,
+            settings.MEDIA_URL,
+            obj.image_url,
+        )
+
+    class Meta:
+        model = ProductImage
+        fields = ["image_url"]
+
+
 class ProductWithReviewsSerializer(serializers.ModelSerializer):
     product_detail = ProductDetailSerializer(read_only=True, many=True)
     review_set = ReviewSerializer(read_only=True, many=True)
+    images = ProductImageSerializer(read_only=True, many=True)
 
     @staticmethod
     def setup_eager_loading(queryset):
@@ -165,6 +178,7 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
             "product_detail",
             "product_detail__color",
             "product_detail__size",
+            "images",
         )
         return queryset
 
@@ -182,17 +196,17 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
             "main_image",
             "product_detail",
             "review_set",
+            "images",
         ]
 
 
-class ProductPageSerializer(serializers.ModelSerializer):
-    product_detail = ProductDetailSerializer(read_only=True, many=True)
-    images = ProductImageSerializer(many=True)
+class StockSerializer(serializers.ModelSerializer):
+    product_detail = serializers.StringRelatedField(read_only=True)
 
     class Meta:
-        model = Product
-        # fields = "__all__"
-        exclude = ("embedding",)
+        model = Stock
+        fields = ["id", "product_detail", "quantity_in_stock", "products_sold"]
+        read_only_fields = ["id", "product_detail", "products_sold"]
 
 
 class ProductAttributeSerializer(serializers.ModelSerializer):
@@ -228,3 +242,16 @@ class ProductAttributesvaluesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductAttributeValues
         fields = "__all__"
+
+
+class UndetailedProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "slug",
+            "average_rating",
+            "reviews_count",
+            "main_image",
+        ]

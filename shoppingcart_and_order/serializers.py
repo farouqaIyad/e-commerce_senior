@@ -1,13 +1,28 @@
-from catalog.serializers import ProductSerializer, Product
+from catalog.serializers import UndetailedProductSerializer, Product
 from rest_framework import serializers
 from .models import ShoppingCart, Order, ShoppingCartProducts
 from address.models import Address
-from catalog.serializers import ProductDetailSerializer
+from catalog.serializers import ProductDetail
 from django.db import models
 
 
+class ShoppingDetailSerializer(serializers.ModelSerializer):
+    product = UndetailedProductSerializer(read_only=True)
+    color = serializers.StringRelatedField(many=True)
+    size = serializers.StringRelatedField(many=True)
+
+    @staticmethod
+    def setup_eager_loading(queryset):
+        queryset = queryset.prefetch_related("color", "size", "product")
+        return queryset
+
+    class Meta:
+        model = ProductDetail
+        fields = ["product", "id", "color", "size", "price", "sale_price"]
+
+
 class ShoppingCartProductsSerializer(serializers.ModelSerializer):
-    product = ProductDetailSerializer(read_only=True)
+    product = ShoppingDetailSerializer(read_only=True)
 
     class Meta:
         model = ShoppingCartProducts
@@ -15,11 +30,17 @@ class ShoppingCartProductsSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-    shopping_cart = ShoppingCartProductsSerializer(many=True, read_only=True)
+    shopping_cart = ShoppingCartProductsSerializer(read_only=True, many=True)
 
-    # @staticmethod
-    # def setup_eager_loading(queryset):
-    #     return queryset.select_related('shopping_cart')
+    @staticmethod
+    def setup_eager_loading(queryset):
+        return queryset.prefetch_related(
+            "shopping_cart",
+            "shopping_cart__product",
+            "shopping_cart__product__color",
+            "shopping_cart__product__size",
+            "shopping_cart__product__product",
+        )
 
     class Meta:
         model = ShoppingCart

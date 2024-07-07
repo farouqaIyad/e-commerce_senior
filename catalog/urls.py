@@ -12,6 +12,7 @@ from .views import (
     ProductTypeDetail,
     ProductDetailView,
     StartUpList,
+    SupplierPageList,
 )
 from django.urls import path
 
@@ -29,4 +30,5 @@ urlpatterns = [
     path("product/<slug:slug>", ProductDetailList.as_view()),
     path("product_detail/<int:pk>", ProductDetailDetail.as_view()),
     path("startup/", StartUpList.as_view()),
+    path("supplier/products/", SupplierPageList.as_view()),
 ]

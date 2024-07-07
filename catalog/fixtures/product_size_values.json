@@ -238,5 +238,11 @@
         "id":  "40",
         "fields":{"size":  "12",
         "value":  "200 ml"
+    }},
+    {
+        "model":  "catalog.size_value",
+        "id":  "41",
+        "fields":{"size":  "3",
+        "value":  "1 TB"
     }}
 ]

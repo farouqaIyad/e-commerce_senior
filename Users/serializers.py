@@ -4,7 +4,6 @@ from rest_framework import serializers
 from django.db import models
 from .models import (
     User,
-    SupplierProfile,
     CustomerProfile,
     DriverProfile,
 )
@@ -23,21 +22,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "password", "first_name", "last_name", "username", "role"]
+        fields = ["email", "password", "first_name", "last_name", "username"]
         read_only_fields = ["role"]
-
-
-class SupplierProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SupplierProfile
-        fields = [
-            "user",
-            "brand_name",
-            "brand_location",
-            "commercial_recored",
-            "is_approved",
-        ]
-        read_only_fields = ["is_approved", "user"]
 
 
 class DriverProfileSerializer(serializers.ModelSerializer):
@@ -48,6 +34,13 @@ class DriverProfileSerializer(serializers.ModelSerializer):
 
 
 class CustomerProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    @staticmethod
+    def setup_eager_loading(queryset):
+        queryset = queryset.select_related("user")
+        return queryset
+
     class Meta:
         model = CustomerProfile
         fields = ["id", "user", "phone_number"]
