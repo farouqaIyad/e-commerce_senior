@@ -5,7 +5,6 @@ from django.db import models
 from .models import (
     User,
     CustomerProfile,
-    DriverProfile,
 )
 
 
@@ -24,13 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ["email", "password", "first_name", "last_name", "username"]
         read_only_fields = ["role"]
-
-
-class DriverProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DriverProfile
-        fields = ["id", "is_approved"]
-        read_only_fields = ["is_approved"]
 
 
 class CustomerProfileSerializer(serializers.ModelSerializer):

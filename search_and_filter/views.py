@@ -8,19 +8,20 @@ from catalog.models import Product, Stock
 from sentence_transformers import SentenceTransformer
 from pgvector.django import CosineDistance
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 
 
 class SearchProduct(APIView, LimitOffsetPagination):
     product_serializer = ProductSerializer
     permission_classes = [IsAuthenticated]
 
-
     def get(self, request, query):
         model = SentenceTransformer("all-MiniLM-L6-v2")
 
         query_vector = model.encode(query)
         results = (
-            Product.objects.with_wishlist_status(request.user).annotate(distance=CosineDistance("embedding", query_vector))
+            Product.objects.with_wishlist_status(request.user)
+            .annotate(distance=CosineDistance("embedding", query_vector))
             .filter(distance__lte=0.75)
             .order_by("distance")[:25]
         )
@@ -35,6 +36,32 @@ class completion(APIView, LimitOffsetPagination):
     def get(self, request, query):
         results = Product.objects.filter(name__icontains=query)[:5].values("name")
         return Response({"message": results})
+
+
+class FiltersList(APIView):
+    product_serializer = ProductSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        filters = {}
+        if "min_price" in request.data:
+            filters["main_price__gte"] = request.data["min_price"]
+        if "max_price" in request.data:
+            filters["main_price__lte"] = request.data["max_price"]
+        if "size" in request.data:
+            filters["product_detail__size__in"] = request.data["size"]
+        if "brand" in request.data:
+            filters["brand__in"] = request.data["brand"]
+        filters["category__slug"] = request.data["category"]
+        filter_q = Q(**filters)
+
+        queryset = (
+            Product.objects.with_wishlist_status(request.user)
+            .filter(filter_q)
+            .distinct()
+        )
+        serializer = ProductSerializer(instance=queryset, many=True)
+        return Response({"products": serializer.data})
 
 
 class change_embedding(APIView):

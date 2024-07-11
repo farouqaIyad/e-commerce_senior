@@ -29,7 +29,7 @@ class UsedCoupons(models.Model):
         Coupon, related_name="used_coupons", on_delete=models.CASCADE
     )
     customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
-    used_coupons = models.IntegerField()
+    times_used = models.IntegerField(default=0)
 
     class Meta:
         db_table = "usedcoupons"

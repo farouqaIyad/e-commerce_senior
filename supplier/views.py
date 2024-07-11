@@ -51,18 +51,20 @@ class SupplierList(APIView):
         return Response(serializer.data)
 
     def put(self, request, format=None):
-        supplier = SupplierProfile.objects.get(pk=request.user.supplierprofile)
-        serializer = SupplierProfileSerializer(supplier, data=request.data)
+        supplier = SupplierProfile.objects.get(user=request.user)
+        serializer = SupplierProfileSerializer(
+            supplier, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "supplier updated"})
         return Response(
-            {"message": "couldn't update supplier"},
+            {"message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    def delete(self, request, pk, format=None):
-        supplier = SupplierProfile.objects.get(pk=request.user.supplierprofile)
+    def delete(self, request, format=None):
+        supplier = SupplierProfile.objects.filter(user=request.user).first()
         supplier.delete()
         return Response(
             {"message": "supplier deleted"}, status=status.HTTP_204_NO_CONTENT

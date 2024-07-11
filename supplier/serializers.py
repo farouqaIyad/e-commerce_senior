@@ -17,8 +17,12 @@ class SupplierProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "brand_name",
-            "brand_location",
+            "city",
+            "district",
+            "details",
+            "phone_number",
+            "latitude",
+            "longitude",
             "commercial_recored",
             "is_approved",
         ]

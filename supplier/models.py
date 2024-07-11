@@ -1,6 +1,7 @@
 from django.db import models
 from Users.models import User
 from django.contrib.auth.models import BaseUserManager
+from .utils import validate_lat, validate_long
 
 
 class SupplierManager(BaseUserManager):
@@ -19,8 +20,12 @@ class Supplier(User):
 
 class SupplierProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    brand_name = models.CharField(max_length=255, blank=False, null=False)
-    brand_location = models.CharField(max_length=255)
+    city = models.CharField(max_length=64, blank=True, null=True)
+    district = models.CharField(max_length=64, blank=True, null=True)
+    details = models.TextField(blank=True)
+    phone_number = models.CharField(max_length=10)
+    latitude = models.FloatField(default=0.00, validators=[validate_lat])
+    longitude = models.FloatField(default=0.00, validators=[validate_long])
     commercial_recored = models.ImageField(
         upload_to="commercial_records", default="commercial_records/default.png"
     )

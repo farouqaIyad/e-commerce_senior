@@ -13,6 +13,7 @@ from .serializers import (
     ProductAttributesvaluesSerializer,
     ProductWithReviewsSerializer,
     StockSerializer,
+    BrandSerializer,
 )
 from .models import (
     Category,
@@ -27,6 +28,8 @@ from .models import (
     ProductAttribute,
     ProductAttributeValues,
     ProductTypeAttributes,
+    Brand,
+    CategoriesBrand,
 )
 from permissions import IsSupplierOrReadOnly, IsAdminOrReadOnly
 from rest_framework.response import Response
@@ -40,14 +43,13 @@ from promotion.serializers import Promotion, PromotionSerializer
 from .tasks import save_product_details
 from decimal import Decimal
 import ast
-from django.db.models import OuterRef, Exists
+from django.db.models import Avg, Max, Min, Sum
 
 
 # admin
 class CategoryList(APIView):
 
     def post(self, request, format=None):
-        print(request.data)
         name, parent = request.data.values()
         try:
             if parent:
@@ -69,7 +71,7 @@ class CategoryList(APIView):
     def get(self, request, format=None):
         category = Category.objects.filter(level=0)
         serializer = CategorySerializer(instance=category, many=True)
-        return Response({"categories": serializer.data})
+        return Response(serializer.data)
 
 
 class CategoryDetail(APIView):
@@ -86,7 +88,7 @@ class CategoryDetail(APIView):
         categories = category.get_children()
         if categories:
             serializer = CategorySerializer(instance=categories, many=True)
-            return Response({"categories": serializer.data})
+            return Response(serializer.data)
         else:
             return Response({"message": "no children"})
 
@@ -331,26 +333,38 @@ class ProductList(APIView):
 
 
 class ProductDetailView(APIView):
-    permission_classes = [IsSupplierOrReadOnly]
 
-    def get(self, request, slug, format=None):
+    def post(self, request, slug, format=None):
         category = Category.objects.filter(slug=slug).first()
+        order = "-average_rating"
+        if "new_arrival" in request.data:
+            order = "-date_created"
+        if "lowest_price" in request.data:
+            order = "main_price"
+        if "highest_price" in request.data:
+            order = "-main_price"
         if category.is_leaf_node():
-            products = Product.objects.with_wishlist_status(request.user).filter(
-                category=category
+            products = (
+                Product.objects.with_wishlist_status(request.user)
+                .filter(category=category)
+                .order_by(order)
             )
 
         else:
             child_categories = category.get_descendants()
-            products = Product.objects.with_wishlist_status(request.user).filter(
-                category__in=child_categories
+            products = (
+                Product.objects.with_wishlist_status(request.user)
+                .filter(category__in=child_categories)
+                .order_by(order)
             )
 
         serializer = ProductSerializer(instance=products, many=True)
-        return Response(serializer.data)
+        return Response({"products": serializer.data})
 
     def put(self, request, slug, format=None):
-        product = Product.objects.filter(slug=slug)
+        product = Product.objects.filter(
+            slug=slug, supplier=request.user.supplierprofile
+        )
         serializer = ProductSerializer(product, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -413,8 +427,8 @@ class SupplierPageList(APIView):
 
 class StockList(APIView):
 
-    def get(self, request, format=None):
-        stocks = Stock.objects.filter(product_detail__id=request.data["product_detail"])
+    def get(self, request, slug, format=None):
+        stocks = Stock.objects.filter(product_detail__product__slug=slug)
         serializer = StockSerializer(instance=stocks, many=True)
         return Response({"stocks": serializer.data})
 
@@ -437,20 +451,34 @@ class StockDetail(APIView):
 # customer
 
 
+class FilterParams(APIView):
+
+    def post(self, request, format=None):
+        category = Category.objects.filter(slug=request.data["category"]).first()
+        brands = Brand.objects.filter(product__category=category).distinct()
+        serializer = BrandSerializer(instance=brands, many=True)
+        sizes = Size_Value.objects.filter(
+            productdetail__product__category__slug=request.data["category"]
+        ).distinct()
+        size_serializer = ProductSizeValueSerializer(instance=sizes, many=True)
+
+        return Response({"brands": serializer.data, "sizes": size_serializer.data})
+
+
 class StartUpList(APIView):
-    def get(self, request, format=None):
+    def get(self, request, format=None, *args, **kwargs):
         category = Category.objects.filter(level=0)
         serializer = CategorySerializer(instance=category, many=True)
-        promotion = Promotion.objects.all()
+        promotion = Promotion.objects.all()[:3]
         promotion_serializer = PromotionSerializer(instance=promotion, many=True)
         new_products = Product.objects.with_wishlist_status(request.user).order_by(
             "date_created"
-        )[:20]
+        )[:10]
 
         new_products_serializer = ProductSerializer(instance=new_products, many=True)
         highest_rating_products = Product.objects.with_wishlist_status(
             request.user
-        ).order_by("-average_rating")[:20]
+        ).order_by("-average_rating")[:10]
         highest_rating_products_serializer = ProductSerializer(
             instance=highest_rating_products, many=True
         )

@@ -13,6 +13,7 @@ class CouponSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coupon
         fields = [
+            "id",
             "name",
             "coupon_code",
             "discount_value",

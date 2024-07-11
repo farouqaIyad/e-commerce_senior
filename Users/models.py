@@ -34,20 +34,6 @@ class Customer(User):
         proxy = True
 
 
-class DriverManager(BaseUserManager):
-    def get_queryset(self, *args, **kwargs):
-        results = super().get_queryset(*args, **kwargs)
-        return results.filter(role=User.Role.DRIVER)
-
-
-class Driver(User):
-    base_role = User.Role.DRIVER
-    driver = DriverManager()
-
-    class Meta:
-        proxy = True
-
-
 class CustomerSupportManager(BaseUserManager):
     def get_queryset(self, *args, **kwargs):
         results = super().get_queryset(*args, **kwargs)
@@ -68,11 +54,6 @@ class CustomerProfile(models.Model):
 
     def __str__(self):
         return "{}".format(self.user.get_full_name())
-
-
-class DriverProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    is_approved = models.BooleanField(default=False)
 
 
 class CustomerSupportProfile(models.Model):

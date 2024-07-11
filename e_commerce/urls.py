@@ -14,7 +14,7 @@ urlpatterns = [
     path("", include("wishlist.urls")),
     path("", include("search_and_filter.urls")),
     path("", include("promotion.urls")),
-    path("", include("driver.urls")),
+    path("driver/", include("driver.urls")),
     path("supplier/", include("supplier.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

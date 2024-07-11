@@ -10,7 +10,7 @@ class IsSupplierOrReadOnly(BasePermission):
 
 class IsDriver(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == "CUSTOMER"
+        return request.user.is_authenticated and request.user.role == "DRIVER"
 
 
 class IsAdminOrReadOnly(BasePermission):

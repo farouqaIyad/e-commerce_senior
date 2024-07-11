@@ -12,7 +12,7 @@ class AddressList(APIView):
 
     def post(self, request, format=None):
         serializer = AddressSerializer(
-            data=request.data, context={"customer": request.user}
+            data=request.data, context={"customer": request.user.customerprofile}
         )
         if serializer.is_valid():
             serializer.save()
@@ -20,8 +20,8 @@ class AddressList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
-        user = request.user
-        user_addresses = user.address_set.all()
+        customer = request.user.customerprofile
+        user_addresses = customer.address_set.all()
         serializer = AddressSerializer(user_addresses, many=True)
         return Response(serializer.data)
 

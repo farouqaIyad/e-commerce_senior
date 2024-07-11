@@ -11,6 +11,7 @@ from .models import (
     ProductAttributeValues,
     ProductTypeAttributes,
     Stock,
+    Brand,
 )
 from django.conf import settings
 
@@ -66,16 +67,10 @@ class ProductSizeSerializer(serializers.ModelSerializer):
 
 
 class ProductSizeValueSerializer(serializers.ModelSerializer):
-    size = models.ForeignKey(ProductSize, on_delete=models.CASCADE)
-
-    def create(self, validated_data):
-        validated_data["size"] = self.context.get("size")
-
-        return super().create(validated_data)
 
     class Meta:
         model = Size_Value
-        fields = ["id", "value", "size"]
+        fields = ["id", "value"]
         read_only_fields = ["id"]
 
 
@@ -170,6 +165,7 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
     product_detail = ProductDetailSerializer(read_only=True, many=True)
     review_set = ReviewSerializer(read_only=True, many=True)
     images = ProductImageSerializer(read_only=True, many=True)
+    in_wishlist = serializers.BooleanField(read_only=True)
 
     @staticmethod
     def setup_eager_loading(queryset):
@@ -197,11 +193,12 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
             "product_detail",
             "review_set",
             "images",
+            "in_wishlist",
         ]
 
 
 class StockSerializer(serializers.ModelSerializer):
-    product_detail = serializers.StringRelatedField(read_only=True)
+    product_detail = ProductDetailSerializer(read_only=True)
 
     class Meta:
         model = Stock
@@ -255,3 +252,9 @@ class UndetailedProductSerializer(serializers.ModelSerializer):
             "reviews_count",
             "main_image",
         ]
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ["id", "name"]

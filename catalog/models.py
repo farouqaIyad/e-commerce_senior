@@ -85,6 +85,19 @@ class ProductColor(models.Model):
         return "{}".format(self.color)
 
 
+class Brand(models.Model):
+    name = models.CharField(max_length=25, unique=True)
+    category = models.ManyToManyField(Category, blank=True, through="CategoriesBrand")
+
+    class Meta:
+        db_table = "brand"
+
+
+class CategoriesBrand(models.Model):
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+
 class ProductManager(models.Manager):
 
     def with_wishlist_status(self, user):
@@ -123,7 +136,7 @@ class Product(models.Model):
     )
     reviews_count = models.IntegerField(default=0)
     average_rating = models.FloatField(default=0)
-
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True)
     main_image = models.CharField(unique=False, max_length=255)
 
     embedding = VectorField(dimensions=384, null=True, blank=True)
@@ -187,9 +200,6 @@ class ProductDetail(models.Model):
             self.product.save()
 
         return super().save(*args, **kwargs)
-
-    def __str__(self):
-        return "{}-{}-{}".format(self.sku, self.color, self.size)
 
 
 class Stock(models.Model):

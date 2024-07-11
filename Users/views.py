@@ -1,14 +1,11 @@
 from .serializers import (
     UserSerializer,
-    DriverProfileSerializer,
     CustomerProfileSerializer,
 )
 from .models import (
     User,
     Customer,
-    Driver,
     CustomerProfile,
-    DriverProfile,
 )
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -51,39 +48,6 @@ class CustomerSignupAPIView(APIView):
         return Response({"message": "user deleted {}".format(user)})
 
 
-class DriverSignupAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        user_serializer = UserSerializer(data=request.data)
-        profile_serializer = DriverProfileSerializer(data=request.data)
-
-        if user_serializer.is_valid() and profile_serializer.is_valid():
-            user_data = user_serializer.validated_data
-            profile_data = profile_serializer.validated_data
-            user = Driver.objects.create_user(**user_data)
-            profile_data["user"] = user
-            driver_profile = DriverProfile.objects.create(**profile_data)
-            token = RefreshToken.for_user(user)
-
-            return Response(
-                {
-                    "user": user_serializer.data,
-                    "driver_profile": DriverProfileSerializer(driver_profile).data,
-                    "token": str(token.access_token),
-                },
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            errors = {}
-            errors.update(user_serializer.errors)
-            errors.update(profile_serializer.errors)
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, *args, **kwargs):
-        user = request.user
-        user.delete()
-        return Response({"message": "user deleted {}".format(user)})
-
-
 class UserLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data["email"]
@@ -106,12 +70,13 @@ class UserLoginAPIView(APIView):
         return Response({"message": "hello"}, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_account(request):
-    user = request.user
-    print(user)
-    return Response({"message": "{}".format(request.user.id)})
+    user = request.user.customerprofile
+    user.delete()
+
+    return Response({"message": "customer deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class CustomerList(APIView):
@@ -140,33 +105,4 @@ class CustomerDetail(APIView):
     def delete(self, request, pk, format=None):
         customer = CustomerProfile.objects.get(pk=pk)
         customer.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class DriverList(APIView):
-
-    def get(self, request, format=None):
-        drivers = DriverProfile.objects.all()
-        serializer = DriverProfileSerializer(instance=drivers, many=True)
-        return Response(serializer.data)
-
-
-class DriverDetail(APIView):
-    permission_classes = [IsAdminOrReadOnly]
-
-    def put(self, request, pk, format=None):
-        Driver = DriverProfile.objects.get(pk=pk)
-
-        serializer = DriverProfileSerializer(Driver, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "driver updated"})
-        return Response(
-            {"message": "couldn't update driver"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def delete(self, request, pk, format=None):
-        driver = DriverProfile.objects.get(pk=pk)
-        driver.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,0 +1,11 @@
+﻿model,id,name
+catalog.brand,1,Samsung
+catalog.brand,2,Apple
+catalog.brand,3,Acer
+catalog.brand,4,Nokia
+catalog.brand,5,ASUS
+catalog.brand,6,Lenovo
+catalog.brand,7,Motorola
+catalog.brand,8,OnePlus
+catalog.brand,9,HP
+catalog.brand,10,Google Pixel

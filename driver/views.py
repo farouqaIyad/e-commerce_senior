@@ -3,24 +3,85 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import json
 import requests
+from .models import Driver, DriverProfile
+from .serializers import DriverProfileSerializer
+from Users.serializers import UserSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
+from permissions import IsAdminOrReadOnly, IsDriver
 
-# from geopy.geocoders import Nominatim
-# from geopy.exc import GeocoderTimedOut
 
-# class get_location(APIView):
+def index(request):
 
-#     def get(self, request, format=None):
-#         try:
-#             geolocator = Nominatim(user_agent="geoapiExercises")
+    return render(request, "driver/index.html")
 
-#             # Get current location using GPS coordinates
-#             location = geolocator.geocode("me", timeout=10)
 
-#             if location:
-#                 return Response({"latitude":location.latitude,"lon":location.longitude})
+def room(request, room_name):
+    return render(request, "driver/room.html", {"room_name": room_name})
 
-#                 print("Address:", location.address)
-#             else:
-#                 return Response({"message":"location not found"})
-#         except GeocoderTimedOut:
-#             return Response({"message":"service timed out"})
+
+class DriverList(APIView):
+    def post(self, request, *args, **kwargs):
+        user_serializer = UserSerializer(data=request.data)
+        profile_serializer = DriverProfileSerializer(data=request.data)
+
+        if user_serializer.is_valid() and profile_serializer.is_valid():
+            user_data = user_serializer.validated_data
+            profile_data = profile_serializer.validated_data
+            user = Driver(**user_data)
+            # user = Driver.objects.create_user(**user_data)
+            profile_data["user"] = user
+            driver_profile = DriverProfile.objects.create(**profile_data)
+            if driver_profile:
+                user.save()
+            token = RefreshToken.for_user(user)
+
+            return Response(
+                {
+                    "user": user_serializer.data,
+                    "driver_profile": DriverProfileSerializer(driver_profile).data,
+                    "token": str(token.access_token),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            errors = {}
+            errors.update(user_serializer.errors)
+            errors.update(profile_serializer.errors)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, format=None):
+        drivers = DriverProfile.objects.all()
+        serializer = DriverProfileSerializer(instance=drivers, many=True)
+        return Response(serializer.data)
+
+
+class DriverDetail(APIView):
+    permission_classes = [IsDriver]
+
+    def put(self, request, pk, format=None):
+        Driver = DriverProfile.objects.get(pk=pk)
+
+        serializer = DriverProfileSerializer(Driver, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "driver updated"})
+        return Response(
+            {"message": "couldn't update driver"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def delete(self, request, pk, format=None):
+        driver = DriverProfile.objects.get(user=request.user)
+        driver.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ApproveDriver(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def post(self, request, format=None):
+        supplier = DriverProfile.objects.get(user=request.data["driver_id"])
+        supplier.is_approved = request.data["is_approved"]
+        supplier.save()
+        return Response({"message": "driver approval status changed"})

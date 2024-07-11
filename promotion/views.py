@@ -48,19 +48,18 @@ class CouponDetail(APIView):
 
     def put(self, request, pk, format=None):
         coupon = Coupon.objects.get(pk=pk)
-        serializer = CouponSerializer(instance=coupon,data = request.data)
+        serializer = CouponSerializer(instance=coupon, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "coupon updated"})
         return Response(
             {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
-    
-    def delete(self,request,pk,format = None):
+
+    def delete(self, request, pk, format=None):
         coupon = Coupon.objects.get(pk=pk)
         coupon.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 
 class PromotionList(APIView):
@@ -83,14 +82,17 @@ class PromotionList(APIView):
 class PromotionDetail(APIView):
     def put(self, request, pk, format=None):
         promotion = Promotion.objects.get(pk=pk)
-        serializer = PromotionSerializer(instance=promotion, data=request.data)
+        serializer = PromotionSerializer(
+            instance=promotion, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "promotion updated"})
         return Response(
             {"message": "failed to update"}, status=status.HTTP_400_BAD_REQUEST
         )
-    def delete(self,request,pk,format = None):
+
+    def delete(self, request, pk, format=None):
         promotion = Promotion.objects.get(pk=pk)
         promotion.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

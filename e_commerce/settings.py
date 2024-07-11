@@ -42,7 +42,7 @@ AUTH_USER_MODEL = "Users.User"
 # Application definition
 
 INSTALLED_APPS = [
-    # 'daphne' ,
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "address",
     "promotion",
     "supplier",
+    "driver",
     # external applications
     "rest_framework_simplejwt",
     # "django_elasticsearch_dsl",
@@ -71,7 +72,7 @@ INSTALLED_APPS = [
     "django_celery_results",
     "django_celery_beat",
     "django_extensions",
-    # "channels",
+    "channels",
 ]
 
 
@@ -137,7 +138,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": 20,
 }
 
 TEMPLATES = [
@@ -157,7 +158,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "e_commerce.wsgi.application"
-# ASGI_APPLICATION = "e_commerce.routing.application"
 
 
 # Database
@@ -268,12 +268,12 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [("127.0.0.1", 6379)],
-#         },
-#     },
-# }
-# ASGI_APPLICATION = 'yourprojectname.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+ASGI_APPLICATION = "e_commerce.asgi.application"

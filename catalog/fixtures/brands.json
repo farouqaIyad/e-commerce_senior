@@ -1,0 +1,52 @@
+[
+    {
+        "model":  "catalog.brand",
+        "id":  "1",
+        "fields":{"name":  "Samsung"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "2",
+        "fields":{"name":  "Apple"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "3",
+        "fields":{"name":  "Acer"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "4",
+        "fields":{"name":  "Nokia"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "5",
+        "fields":{"name":  "ASUS"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "6",
+        "fields":{"name":  "Lenovo"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "7",
+        "fields":{"name":  "Motorola"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "8",
+        "fields":{"name":  "OnePlus"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "9",
+        "fields":{"name":  "HP"
+    }},
+    {
+        "model":  "catalog.brand",
+        "id":  "10",
+        "fields":{"name":  "Google Pixel"
+    }}
+]

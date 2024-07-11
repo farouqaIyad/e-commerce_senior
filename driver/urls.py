@@ -1,6 +1,8 @@
-# from .views import get_location
 from django.urls import path
 
+from . import views
+
 urlpatterns = [
-    # path("location/", get_location.as_view()),
+    path("", views.DriverList.as_view()),
+    path("<int:pk>", views.DriverDetail.as_view()),
 ]
