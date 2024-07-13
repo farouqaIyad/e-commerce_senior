@@ -112,7 +112,7 @@ class ProductRegisterSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     in_wishlist = serializers.BooleanField(read_only=True)
-
+    
     class Meta:
         model = Product
         fields = [
@@ -129,8 +129,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
-    color = serializers.StringRelatedField(many=True)
-    size = serializers.StringRelatedField(many=True)
+    color = serializers.StringRelatedField()
+    size = serializers.StringRelatedField()
 
     class Meta:
         model = ProductDetail
@@ -165,7 +165,7 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
     product_detail = ProductDetailSerializer(read_only=True, many=True)
     review_set = ReviewSerializer(read_only=True, many=True)
     images = ProductImageSerializer(read_only=True, many=True)
-    in_wishlist = serializers.BooleanField(read_only=True)
+    # in_wishlist = serializers.BooleanField(read_only=True)
 
     @staticmethod
     def setup_eager_loading(queryset):
@@ -193,7 +193,7 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
             "product_detail",
             "review_set",
             "images",
-            "in_wishlist",
+            # "in_wishlist",
         ]
 
 

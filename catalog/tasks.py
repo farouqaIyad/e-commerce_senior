@@ -29,17 +29,18 @@ def save_product_details(
         if color_id:
             try:
                 color = ProductColor.objects.get(id=color_id)
-                product_detail.color.add(color)
+                product_detail.color = color
             except ProductColor.DoesNotExist:
                 return "not found"
         if size_id:
             try:
                 size = Size_Value.objects.get(id=size_id)
-                product_detail.size.add(size)
+                product_detail.size=size
             except Size_Value.DoesNotExist:
                 return "not found"
 
         product_details.append(product_detail)
+        product_detail.save()
         Bool_value = False
 
     stocks = [

@@ -22,11 +22,7 @@ class Category(MPTTModel):
         blank=True,
         unique=False,
     )
-    image_url = models.ImageField(
-        unique=False,
-        upload_to="images/category/",
-        default="images/category/default.png",
-    )
+    image_url = models.CharField(max_length=255)
 
     objects = models.Manager()
 
@@ -101,7 +97,7 @@ class CategoriesBrand(models.Model):
 class ProductManager(models.Manager):
 
     def with_wishlist_status(self, user):
-        from wishlist.models import Wishlist
+        from wishlist_cart.models import Wishlist
 
         return self.get_queryset().annotate(
             in_wishlist=Exists(
@@ -124,20 +120,12 @@ class Product(models.Model):
     supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     date_created = models.DateField(auto_now_add=True, editable=False)
-    main_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        unique=False,
-        null=True,
-        blank=True,
-    )
-    main_sale_price = models.DecimalField(
-        max_digits=10, decimal_places=2, unique=False, null=True, blank=True
-    )
+    main_price = models.IntegerField(null=True,blank=True)
+    main_sale_price = models.IntegerField(default = 0)
     reviews_count = models.IntegerField(default=0)
     average_rating = models.FloatField(default=0)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True)
-    main_image = models.CharField(unique=False, max_length=255)
+    main_image = models.CharField(max_length=255)
 
     embedding = VectorField(dimensions=384, null=True, blank=True)
 
@@ -172,17 +160,10 @@ class ProductDetail(models.Model):
     product = models.ForeignKey(
         Product, related_name="product_detail", on_delete=models.CASCADE
     )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0.01,
-        unique=False,
-        null=False,
-        blank=False,
-    )
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    color = models.ManyToManyField(ProductColor)
-    size = models.ManyToManyField(Size_Value)
+    price = models.IntegerField(null=False,blank=False)
+    sale_price = models.IntegerField(default=0)
+    color = models.ForeignKey(ProductColor,null=True, blank=True,on_delete=models.CASCADE)
+    size = models.ForeignKey(Size_Value,null=True, blank=True,on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     is_main = models.BooleanField(default=False)
     objects = models.Manager()

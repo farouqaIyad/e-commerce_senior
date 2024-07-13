@@ -384,7 +384,7 @@ class ProductDetailView(APIView):
 class ProductDetailList(APIView):
 
     def get(self, request, slug, format=None):
-        product = Product.objects.with_wishlist_status(request.user).filter(slug=slug)
+        product = Product.objects.filter(slug=slug)
         product = ProductWithReviewsSerializer.setup_eager_loading(product)
         product_serializer = ProductWithReviewsSerializer(product[0])
 
