@@ -18,42 +18,51 @@ from .serializers import UserSerializer
 from rest_framework import status
 from .models import User
 from permissions import IsAdminOrReadOnly
-
+from fcm_django.models import FCMDevice
+from django.db import transaction
 
 class CustomerSignupAPIView(APIView):
     def post(self, request, *args, **kwargs):
         user_serializer = UserSerializer(data=request.data)
         if user_serializer.is_valid():
-            user_data = user_serializer.validated_data
-            user = Customer.objects.create_user(**user_data)
-            customer_profile = CustomerProfile.objects.create(
-                user=user, phone_number=request.data["phone_number"]
-            )
-            token = RefreshToken.for_user(user)
-
-            return Response(
+            try:
+                with transaction.atomic():
+                    user_data = user_serializer.validated_data
+                    user = Customer.objects.create_user(**user_data)
+                    customer_profile = CustomerProfile.objects.create(
+                        user=user, phone_number=request.data["phone_number"]
+                    )
+                    device = FCMDevice.objects.create(registration_id = request.data['fcm_token'],user = user)
+                    token = RefreshToken.for_user(user)
+                    return Response(
                 {
                     "token": str(token.access_token),
                 },
                 status=status.HTTP_201_CREATED,
             )
+            except Exception as e:
+                return Response(f"An error occurred: {e}")
+
+            
         else:
             errors = {}
             errors.update(user_serializer.errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, *args, **kwargs):
-        user = request.user
-        user.delete()
-        return Response({"message": "user deleted {}".format(user)})
-
 
 class UserLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        email = request.data["email"]
+        email_or_username = request.data["email"]
         password = request.data.get("password")
-        user = User.objects.get(email=email)
+
+        if '@' in email_or_username:
+            kwargs = {'email': email_or_username}
+        else:
+            kwargs = {'username': email_or_username}
+        user = User.objects.get(**kwargs)
         if user and user.check_password(password):
+            if "fcm_token" in request.data:
+                device = FCMDevice.objects.create(registeration_id = request.data['fcm_token'],user = user)
             token = RefreshToken.for_user(user)
             message = "logged in as a {}".format(user.role)
             return Response(
@@ -64,22 +73,17 @@ class UserLoginAPIView(APIView):
             {"message": "incorrect email or password."},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
-    def get(self, request, format=None):
-        print(request.data)
-        return Response({"message": "hello"}, status=status.HTTP_200_OK)
-
-
-@api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
-def delete_account(request):
-    user = request.user.customerprofile
-    user.delete()
-
-    return Response({"message": "customer deleted"}, status=status.HTTP_204_NO_CONTENT)
+ 
+class UserLogoutAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        request.user.auth_token.delete()
+        device = FCMDevice.objects.filter(user = request.user).first()
+        device.delete()
+        return Response(status=status.HTTP_200_OK)
 
 
-class CustomerList(APIView):
+
+class AdminCustomersList(APIView):
 
     def get(self, request, format=None):
         customer = CustomerProfile.objects.all()
@@ -91,9 +95,12 @@ class CustomerList(APIView):
 class CustomerDetail(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
-    def put(self, request, pk, format=None):
-        customer = CustomerProfile.objects.get(pk=pk)
-        serializer = CustomerProfileSerializer(customer, data=request.data)
+    def get(self, request, format = None):
+        customer_serializer = CustomerProfileSerializer(instance=request.user.customerprofile)
+        return Response({"customer":customer_serializer.data})
+
+    def put(self, request, format=None):
+        serializer = CustomerProfileSerializer(instance=request.user.customerprofile, data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Customer updated"})
@@ -102,7 +109,7 @@ class CustomerDetail(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    def delete(self, request, pk, format=None):
-        customer = CustomerProfile.objects.get(pk=pk)
-        customer.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    # def delete(self, request, format=None):
+    #     customer = CustomerProfile.objects.get(pk=pk)
+    #     customer.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)

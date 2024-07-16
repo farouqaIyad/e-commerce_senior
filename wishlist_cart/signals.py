@@ -29,7 +29,6 @@ def shopping_cart_products_post_save(sender, created, instance, **kwargs):
             total_cost += object.product.price * object.quantity
         instance.shopping_cart.total_price = total_cost
         instance.shopping_cart.save()
-        print("reached here brother")
 
 
 @receiver(pre_delete, sender=ShoppingCartProducts)

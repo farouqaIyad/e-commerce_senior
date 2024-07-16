@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from math import ceil
 from .models import Promotion
-
+from notifications.tasks import notify_customers
 
 @shared_task(bind=True)
 def promotion_management(self):
@@ -33,7 +33,7 @@ def start_promotion(self, promotion_id):
     with transaction.atomic():
         promotion = Promotion.objects.get(pk=promotion_id)
         reduction = promotion.discount_percentege / 100
-        products_detail = ProductDetail.active_product_details.filter(
+        products_detail = ProductDetail.objects.filter(
             product__products_on_promotion__promotion=promotion
         )
         for product_detail in products_detail:
@@ -41,6 +41,10 @@ def start_promotion(self, promotion_id):
                 product_detail.price - (product_detail.price * Decimal(reduction))
             )
             product_detail.save()
+        notify_customers.delay(promotion)
+        
+                    
+    
     return "promotion applied to all products details"
 
 

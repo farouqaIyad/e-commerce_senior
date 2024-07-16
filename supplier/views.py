@@ -18,27 +18,32 @@ class SupplierSignupAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        user_serializer = UserSerializer(data=request.data)
-        profile_serializer = SupplierProfileSerializer(data=request.data)
-        if user_serializer.is_valid() and profile_serializer.is_valid():
-            user_data = user_serializer.validated_data
-            profile_data = profile_serializer.validated_data
-            user = Supplier.objects.create_user(**user_data)
-            profile_data["user"] = user
-            supplier_profile = SupplierProfile.objects.create(**profile_data)
-            token = RefreshToken.for_user(user)
+        print(request.data)
+        return Response({"message":'hello'})
+        # user_serializer = UserSerializer(data=request.data)
+        # profile_serializer = SupplierProfileSerializer(data=request.data)
+        # if user_serializer.is_valid() and profile_serializer.is_valid():
+        #     user_data = user_serializer.validated_data
+        #     profile_data = profile_serializer.validated_data
+        #     user = Supplier.objects.create_user(**user_data)
+        #     profile_data["user"] = user
+        #     supplier_profile = SupplierProfile.objects.create(**profile_data)
+        #     token = RefreshToken.for_user(user)
 
-            return Response(
-                {
-                    "token": str(token.access_token),
-                },
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            errors = {}
-            errors.update(user_serializer.errors)
-            errors.update(profile_serializer.errors)
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        #     return Response(
+        #         {
+        #             "token": str(token.access_token),
+        #         },
+        #         status=status.HTTP_201_CREATED,
+        #     )
+        # else:
+        #     errors = {}
+        #     errors.update(user_serializer.errors)
+        #     errors.update(profile_serializer.errors)
+        #     print(user_serializer.errors)
+        #     print(profile_serializer.errors)
+
+        #     return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SupplierList(APIView):
@@ -51,9 +56,8 @@ class SupplierList(APIView):
         return Response(serializer.data)
 
     def put(self, request, format=None):
-        supplier = SupplierProfile.objects.get(user=request.user)
         serializer = SupplierProfileSerializer(
-            supplier, data=request.data, partial=True
+            request.user.supplierprofile, data=request.data, partial=True
         )
         if serializer.is_valid():
             serializer.save()

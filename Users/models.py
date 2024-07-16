@@ -51,6 +51,7 @@ class CustomerSupport(User):
 class CustomerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15, unique=True)
+    fcm_token = models.CharField(max_length=100,default = 'empty')
 
     def __str__(self):
         return "{}".format(self.user.get_full_name())

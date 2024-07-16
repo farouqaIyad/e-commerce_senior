@@ -11,10 +11,12 @@ from .models import (
     ProductAttributeValues,
     ProductTypeAttributes,
     Stock,
+
     Brand,
+    CategoriesBrand
 )
 from django.conf import settings
-
+from django.db.models import Prefetch
 from user_feedback.serializers import ReviewSerializer
 from rest_framework import serializers
 from django.db.models import Avg
@@ -56,7 +58,7 @@ class ProductTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductType
-        fields = ["name", "product_size"]
+        fields = ["id","name", "product_size"]
         depth = 1
 
 
@@ -165,15 +167,21 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
     product_detail = ProductDetailSerializer(read_only=True, many=True)
     review_set = ReviewSerializer(read_only=True, many=True)
     images = ProductImageSerializer(read_only=True, many=True)
-    # in_wishlist = serializers.BooleanField(read_only=True)
+    in_wishlist = serializers.BooleanField(read_only=True)
 
     @staticmethod
     def setup_eager_loading(queryset):
         queryset = queryset.prefetch_related(
             "review_set",
             "product_detail",
-            "product_detail__color",
-            "product_detail__size",
+            Prefetch(
+                "product_detail__color",
+                queryset=ProductColor.objects.all(),  # Or filter if needed
+            ),
+            Prefetch(
+                "product_detail__size",
+                queryset=Size_Value.objects.all(),  # Or filter if needed
+            ),
             "images",
         )
         return queryset
@@ -193,7 +201,7 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
             "product_detail",
             "review_set",
             "images",
-            # "in_wishlist",
+            "in_wishlist",
         ]
 
 
@@ -258,3 +266,4 @@ class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = ["id", "name"]
+

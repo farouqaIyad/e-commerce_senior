@@ -90,7 +90,7 @@ class Brand(models.Model):
 
 
 class CategoriesBrand(models.Model):
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
+    brand = models.ForeignKey(Brand, related_name='brand',on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
 
@@ -192,6 +192,9 @@ class Stock(models.Model):
 
     class Meta:
         db_table = "stock"
+
+    def __str__(self):
+        return "{}".format(self.quantity_in_stock)
 
 
 class ProductImage(models.Model):

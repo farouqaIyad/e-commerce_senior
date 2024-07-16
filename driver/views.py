@@ -9,6 +9,9 @@ from Users.serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from permissions import IsAdminOrReadOnly, IsDriver
+from django.db import transaction
+from fcm_django.models import FCMDevice
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 def index(request):
@@ -21,29 +24,32 @@ def room(request, room_name):
 
 
 class DriverList(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
     def post(self, request, *args, **kwargs):
         user_serializer = UserSerializer(data=request.data)
         profile_serializer = DriverProfileSerializer(data=request.data)
 
         if user_serializer.is_valid() and profile_serializer.is_valid():
-            user_data = user_serializer.validated_data
-            profile_data = profile_serializer.validated_data
-            user = Driver(**user_data)
-            # user = Driver.objects.create_user(**user_data)
-            profile_data["user"] = user
-            driver_profile = DriverProfile.objects.create(**profile_data)
-            if driver_profile:
-                user.save()
-            token = RefreshToken.for_user(user)
+            try:
+                with transaction.atomic():
+                    user_data = user_serializer.validated_data
+                    profile_data = profile_serializer.validated_data
+                    user = Driver.objects.create_user(**user_data)
+                    profile_data["user"] = user
+                    driver_profile = DriverProfile.objects.create(**profile_data)
+                    device = FCMDevice.objects.create(registration_id = request.data['fcm_token'],user = user)
+                    token = RefreshToken.for_user(user)
 
-            return Response(
-                {
-                    "user": user_serializer.data,
-                    "driver_profile": DriverProfileSerializer(driver_profile).data,
-                    "token": str(token.access_token),
-                },
-                status=status.HTTP_201_CREATED,
-            )
+                    return Response(
+                        {
+                            "token": str(token.access_token),
+                        },
+                        status=status.HTTP_201_CREATED,
+                    )
+            except Exception as e:
+                return Response(f"An error occurred: {e}")
+            
         else:
             errors = {}
             errors.update(user_serializer.errors)
@@ -59,10 +65,12 @@ class DriverList(APIView):
 class DriverDetail(APIView):
     permission_classes = [IsDriver]
 
-    def put(self, request, pk, format=None):
-        Driver = DriverProfile.objects.get(pk=pk)
+    def get(self, request, format = None):
+        customer_serializer = DriverProfileSerializer(instance=request.user.customerprofile)
+        return Response({"driver":customer_serializer.data})
 
-        serializer = DriverProfileSerializer(Driver, data=request.data, partial=True)
+    def put(self, request, format=None):
+        serializer = DriverProfileSerializer(instance=request.user.driverprofile, data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "driver updated"})

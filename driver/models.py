@@ -24,3 +24,13 @@ class DriverProfile(models.Model):
     latitude = models.FloatField(default=0.00, validators=[validate_lat])
     longitude = models.FloatField(default=0.00, validators=[validate_long])
     phone_number = models.CharField(max_length=15, unique=True)
+    vehicle_types = (
+        ("BIKE", "Bike"),
+        ("CAR", "Car"),
+        ("TRUCK", "Truck"),
+        )
+
+    vehicle_type = models.CharField(max_length=9,
+                  choices=vehicle_types,blank= False)
+    vehicle_plate = models.CharField(max_length=10,blank=False,unique=True)
+    vehicle_image = models.ImageField(upload_to='driver',default = "drivers/default")

@@ -15,5 +15,6 @@ urlpatterns = [
     path("", include("promotion.urls")),
     path("driver/", include("driver.urls")),
     path("supplier/", include("supplier.urls")),
+    path("noti/", include("notifications.urls")),
     path("__debug__/", include(debug_toolbar.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

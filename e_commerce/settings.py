@@ -17,7 +17,10 @@ from dotenv import load_dotenv
 from celery.schedules import crontab
 
 load_dotenv()
-
+from firebase_admin import initialize_app
+FIREBASE_APP = initialize_app()
+GOOGLE_APPLICATION_CREDENTIALS = r"C:\Users\NITRO 5\Downloads\ecommerce-79ee2-firebase-adminsdk-47gdo-6740fe6854.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,6 +64,7 @@ INSTALLED_APPS = [
     "promotion",
     "supplier",
     "driver",
+    'notifications',
     # external applications
     "rest_framework_simplejwt",
     # "django_elasticsearch_dsl",
@@ -72,6 +76,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "django_extensions",
     "channels",
+    "fcm_django"
 ]
 
 
