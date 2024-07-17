@@ -32,7 +32,7 @@ class CustomerSignupAPIView(APIView):
                     customer_profile = CustomerProfile.objects.create(
                         user=user, phone_number=request.data["phone_number"]
                     )
-                    device = FCMDevice.objects.create(registration_id = request.data['fcm_token'],user = user)
+                    device = FCMDevice.objects.update_or_create(registration_id = request.data['fcm_token'],user = user)
                     token = RefreshToken.for_user(user)
                     return Response(
                 {
@@ -62,7 +62,7 @@ class UserLoginAPIView(APIView):
         user = User.objects.get(**kwargs)
         if user and user.check_password(password):
             if "fcm_token" in request.data:
-                device = FCMDevice.objects.create(registeration_id = request.data['fcm_token'],user = user)
+                device = FCMDevice.objects.update_or_create(registration_id = request.data['fcm_token'],user = user)
             token = RefreshToken.for_user(user)
             message = "logged in as a {}".format(user.role)
             return Response(
@@ -78,7 +78,8 @@ class UserLogoutAPIView(APIView):
     def get(self, request, *args, **kwargs):
         request.user.auth_token.delete()
         device = FCMDevice.objects.filter(user = request.user).first()
-        device.delete()
+        if device:
+            device.delete()
         return Response(status=status.HTTP_200_OK)
 
 
@@ -91,6 +92,8 @@ class AdminCustomersList(APIView):
         serializer = CustomerProfileSerializer(instance=customer, many=True)
         return Response({"customers": serializer.data}, status=status.HTTP_200_OK)
 
+class AdminCustomerDetail(APIView):
+    pass 
 
 class CustomerDetail(APIView):
     permission_classes = [IsAdminOrReadOnly]

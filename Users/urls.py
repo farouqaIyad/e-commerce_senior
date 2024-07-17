@@ -15,5 +15,5 @@ urlpatterns = [
     path("login/", UserLoginAPIView.as_view()),
     path("logout/",UserLogoutAPIView.as_view()),
     path("admin/customers", AdminCustomersList.as_view()),
-    path("admin/customers/<int:pk>", CustomerDetail.as_view()),
+    path("customer/", CustomerDetail.as_view()),
 ]

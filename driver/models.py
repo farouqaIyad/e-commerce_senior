@@ -34,3 +34,4 @@ class DriverProfile(models.Model):
                   choices=vehicle_types,blank= False)
     vehicle_plate = models.CharField(max_length=10,blank=False,unique=True)
     vehicle_image = models.ImageField(upload_to='driver',default = "drivers/default")
+    is_online = models.BooleanField(default=True)

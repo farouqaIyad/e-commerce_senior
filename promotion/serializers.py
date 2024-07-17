@@ -18,6 +18,7 @@ class CouponSerializer(serializers.ModelSerializer):
             "coupon_code",
             "discount_value",
             "user_max_use",
+            "products_to_earn"
         ]
         write_only_fields = ["coupon_code"]
 

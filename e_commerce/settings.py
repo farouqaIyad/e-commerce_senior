@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'notifications',
     # external applications
     "rest_framework_simplejwt",
-    # "django_elasticsearch_dsl",
     "corsheaders",
     "rest_framework",
     "mptt",
@@ -84,7 +83,7 @@ GRAPH_MODELS = {
     "all_applications": True,
     "group_models": True,
 }
-SITE_ID = 3
+SITE_ID = 4
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -281,3 +280,11 @@ CHANNEL_LAYERS = {
     },
 }
 ASGI_APPLICATION = "e_commerce.asgi.application"
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'farwqyad64@gmail.com'
+EMAIL_HOST_PASSWORED = 'farouq2000'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'farwqyad64@gmail.com'

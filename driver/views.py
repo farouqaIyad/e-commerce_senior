@@ -27,6 +27,7 @@ class DriverList(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
+        print(request.data)
         user_serializer = UserSerializer(data=request.data)
         profile_serializer = DriverProfileSerializer(data=request.data)
 
@@ -38,7 +39,7 @@ class DriverList(APIView):
                     user = Driver.objects.create_user(**user_data)
                     profile_data["user"] = user
                     driver_profile = DriverProfile.objects.create(**profile_data)
-                    device = FCMDevice.objects.create(registration_id = request.data['fcm_token'],user = user)
+                    device = FCMDevice.objects.update_or_create(registration_id = request.data['fcm_token'],user = user)
                     token = RefreshToken.for_user(user)
 
                     return Response(
@@ -66,8 +67,8 @@ class DriverDetail(APIView):
     permission_classes = [IsDriver]
 
     def get(self, request, format = None):
-        customer_serializer = DriverProfileSerializer(instance=request.user.customerprofile)
-        return Response({"driver":customer_serializer.data})
+        driver_serializer = DriverProfileSerializer(instance=request.user.driverprofile)
+        return Response({"driver":driver_serializer.data})
 
     def put(self, request, format=None):
         serializer = DriverProfileSerializer(instance=request.user.driverprofile, data=request.data,partial=True)

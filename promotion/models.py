@@ -19,6 +19,7 @@ class Coupon(models.Model):
         blank=True,
     )
     user_max_use = models.IntegerField(blank=True, null=True)
+    products_to_earn = models.IntegerField(null=False, blank = False)
 
     class Meta:
         db_table = "coupon"

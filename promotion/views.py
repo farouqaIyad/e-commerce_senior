@@ -41,11 +41,6 @@ class CouponList(APIView):
 
 class CouponDetail(APIView):
 
-    def post(self, request, pk, format=None):
-        coupon = Coupon.objects.filter(coupon_code=request.data["coupon_code"]).first()
-        serializer = CouponSerializer(instance=coupon)
-        return Response(serializer.data)
-
     def put(self, request, pk, format=None):
         coupon = Coupon.objects.get(pk=pk)
         serializer = CouponSerializer(instance=coupon, data=request.data, partial=True)
@@ -60,6 +55,13 @@ class CouponDetail(APIView):
         coupon = Coupon.objects.get(pk=pk)
         coupon.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class UseCoupon(APIView):
+    def post(self, request, pk, format=None):
+        coupon = Coupon.objects.filter(coupon_code=request.data["coupon_code"]).first()
+        serializer = CouponSerializer(instance=coupon)
+        return Response({"coupon":serializer.data})
 
 
 class PromotionList(APIView):
