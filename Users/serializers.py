@@ -27,6 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CustomerProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    image_url = serializers.ImageField(required=True,use_url = True)
 
     @staticmethod
     def setup_eager_loading(queryset):
@@ -35,4 +36,4 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomerProfile
-        fields = ["id", "user", "phone_number"]
+        fields = ["id", "user", "phone_number",'image_url']

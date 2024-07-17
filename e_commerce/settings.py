@@ -281,10 +281,3 @@ CHANNEL_LAYERS = {
 }
 ASGI_APPLICATION = "e_commerce.asgi.application"
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'farwqyad64@gmail.com'
-EMAIL_HOST_PASSWORED = 'farouq2000'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'farwqyad64@gmail.com'

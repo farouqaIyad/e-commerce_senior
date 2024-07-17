@@ -67,7 +67,7 @@ class DriverDetail(APIView):
     permission_classes = [IsDriver]
 
     def get(self, request, format = None):
-        driver_serializer = DriverProfileSerializer(instance=request.user.driverprofile)
+        driver_serializer = DriverProfileSerializer(instance=request.user.driverprofile,context={"request":request})
         return Response({"driver":driver_serializer.data})
 
     def put(self, request, format=None):

@@ -96,10 +96,10 @@ class AdminCustomerDetail(APIView):
     pass 
 
 class CustomerDetail(APIView):
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, format = None):
-        customer_serializer = CustomerProfileSerializer(instance=request.user.customerprofile)
+        customer_serializer = CustomerProfileSerializer(instance=request.user.customerprofile,context={"request":request})
         return Response({"customer":customer_serializer.data})
 
     def put(self, request, format=None):
