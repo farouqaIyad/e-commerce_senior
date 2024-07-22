@@ -27,7 +27,6 @@ class DriverList(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
         user_serializer = UserSerializer(data=request.data)
         profile_serializer = DriverProfileSerializer(data=request.data)
 
@@ -39,7 +38,9 @@ class DriverList(APIView):
                     user = Driver.objects.create_user(**user_data)
                     profile_data["user"] = user
                     driver_profile = DriverProfile.objects.create(**profile_data)
-                    device = FCMDevice.objects.update_or_create(registration_id = request.data['fcm_token'],user = user)
+                    device = FCMDevice.objects.update_or_create(
+                        registration_id=request.data["fcm_token"], user=user
+                    )
                     token = RefreshToken.for_user(user)
 
                     return Response(
@@ -50,28 +51,27 @@ class DriverList(APIView):
                     )
             except Exception as e:
                 return Response(f"An error occurred: {e}")
-            
+
         else:
             errors = {}
             errors.update(user_serializer.errors)
             errors.update(profile_serializer.errors)
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request, format=None):
-        drivers = DriverProfile.objects.all()
-        serializer = DriverProfileSerializer(instance=drivers, many=True)
-        return Response(serializer.data)
-
 
 class DriverDetail(APIView):
     permission_classes = [IsDriver]
 
-    def get(self, request, format = None):
-        driver_serializer = DriverProfileSerializer(instance=request.user.driverprofile,context={"request":request})
-        return Response({"driver":driver_serializer.data})
+    def get(self, request, format=None):
+        driver_serializer = DriverProfileSerializer(
+            instance=request.user.driverprofile, context={"request": request}
+        )
+        return Response({"driver": driver_serializer.data})
 
     def put(self, request, format=None):
-        serializer = DriverProfileSerializer(instance=request.user.driverprofile, data=request.data,partial=True)
+        serializer = DriverProfileSerializer(
+            instance=request.user.driverprofile, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "driver updated"})
@@ -87,10 +87,23 @@ class DriverDetail(APIView):
 
 
 class ApproveDriver(APIView):
-    permission_classes = [IsAdminOrReadOnly]
 
     def post(self, request, format=None):
-        supplier = DriverProfile.objects.get(user=request.data["driver_id"])
+        supplier = DriverProfile.objects.get(pk=request.data["driver_id"])
         supplier.is_approved = request.data["is_approved"]
         supplier.save()
         return Response({"message": "driver approval status changed"})
+
+
+class AdminViewDriver(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get(self, request, format=None):
+        if "is_active" in request.data:
+            drivers = DriverProfile.objects.filter(is_active=request.data["is_active"])
+        else:
+            drivers = DriverProfile.objects.all()
+        serializer = DriverProfileSerializer(
+            instance=drivers, many=True, context={"request": request}
+        )
+        return Response(serializer.data)

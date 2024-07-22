@@ -7,10 +7,11 @@ from django.http import Http404
 from .serializers import (
     WishlistSerializer,
     ProductDetail,
-    ShoppingCartProductsSerializer
+    ShoppingCartProductsSerializer,
 )
 from .models import ShoppingCartProducts, ShoppingCart
 from catalog.models import Stock
+
 
 class WishlistList(APIView):
     permission_classes = [IsAuthenticated]
@@ -42,7 +43,7 @@ class WishlistList(APIView):
         return Response(
             {"products": WishlistSerializer(instance=products_qs, many=True).data}
         )
-    
+
     def delete(self, request, format=None):
         if "all" in request.data:
             user_wishlist = request.user.customerprofile.wishlist
@@ -96,8 +97,9 @@ class ShoppingCartList(APIView):
             cart_products
         )
         serializer = ShoppingCartProductsSerializer(instance=cart_products, many=True)
-        return Response({"products":serializer.data,"total_price":int(shoppingcart.total_price)})
-
+        return Response(
+            {"products": serializer.data, "total_price": int(shoppingcart.total_price)}
+        )
 
     def delete(self, request, format=None):
         user_shopping_cart = request.user.customerprofile.shoppingcart
@@ -108,7 +110,7 @@ class ShoppingCartList(APIView):
             return Response({"message": "shopping cart emptied"})
         else:
             product = ProductDetail.objects.get(pk=request.data["product_detail"])
-            product_in_cart = user_shopping_cart.shopping_cart.filter(product = product)
+            product_in_cart = user_shopping_cart.shopping_cart.filter(product=product)
             product_in_cart.delete()
         return Response({"message": "deleted product"})
 
@@ -121,10 +123,10 @@ class ShoppingCartDetail(APIView):
             return ProductDetail.objects.get(pk=pk)
         except ProductDetail.DoesNotExist:
             raise Http404
-    
-    def get(self, request, pk,format =None):
-        quantity = Stock.objects.filter(product_detail__id = pk).first()
-        return Response({"quantity":quantity.quantity_in_stock})
+
+    def get(self, request, pk, format=None):
+        quantity = Stock.objects.filter(product_detail__id=pk).first()
+        return Response({"quantity": quantity.quantity_in_stock})
 
     def put(self, request, pk, format=None):
         user_shopping_cart = request.user.customerprofile.shoppingcart
@@ -133,8 +135,13 @@ class ShoppingCartDetail(APIView):
         ).first()
         product.quantity = request.data["quantity"]
         product.save()
-        return Response({"message": "updated"})
-
+        price = (
+            ShoppingCart.objects.filter(customer=request.user.customerprofile)
+            .values_list("total_price")
+            .first()
+        )
+        print(price)
+        return Response({"message": price[0]})
 
 
 class WishlistConvertToShoppingCart(APIView):
@@ -153,15 +160,17 @@ class Test(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, format=None):
-            user_shopping_cart = request.user.customerprofile.shoppingcart.shopping_cart.all()
-            print(user_shopping_cart)
-            # if "all" in request.data:
-            #     cart_products = ShoppingCartProducts.objects.filter(shopping_cart=user_shopping_cart)
-            #     for product in cart_products:
-            #         product.delete()
-            #     return Response({"message": "shopping cart emptied"})
-            # else:
-            #     product = ProductDetail.objects.get(pk=request.data["product_detail"])
-            #     obj = ShoppingCartProducts.objects.filter(product = product,shopping_cart=user_shopping_cart).first()
-            #     obj.delete()
-            return Response({"message": "deleted product"})
+        user_shopping_cart = (
+            request.user.customerprofile.shoppingcart.shopping_cart.all()
+        )
+        print(user_shopping_cart)
+        # if "all" in request.data:
+        #     cart_products = ShoppingCartProducts.objects.filter(shopping_cart=user_shopping_cart)
+        #     for product in cart_products:
+        #         product.delete()
+        #     return Response({"message": "shopping cart emptied"})
+        # else:
+        #     product = ProductDetail.objects.get(pk=request.data["product_detail"])
+        #     obj = ShoppingCartProducts.objects.filter(product = product,shopping_cart=user_shopping_cart).first()
+        #     obj.delete()
+        return Response({"message": "deleted product"})

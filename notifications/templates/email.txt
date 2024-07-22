@@ -1,5 +1,5 @@
 Hello {{name|safe}}
 Here is Your Coupon Code :
-{{review|safe}}
+{{coupon|safe}}
 
 Thank you!

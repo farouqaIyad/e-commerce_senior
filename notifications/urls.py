@@ -1,9 +1,8 @@
 from .views import (
-Not
+    notificationList,
 )
 from django.urls import path
 
 urlpatterns = [
-    path("not/", Not.as_view()),
-   
+    path("notification/", notificationList.as_view()),
 ]

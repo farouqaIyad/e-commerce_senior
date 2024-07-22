@@ -11,9 +11,8 @@ from .models import (
     ProductAttributeValues,
     ProductTypeAttributes,
     Stock,
-
     Brand,
-    CategoriesBrand
+    CategoriesBrand,
 )
 from django.conf import settings
 from django.db.models import Prefetch
@@ -58,7 +57,7 @@ class ProductTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductType
-        fields = ["id","name", "product_size"]
+        fields = ["id", "name", "product_size"]
         depth = 1
 
 
@@ -114,7 +113,7 @@ class ProductRegisterSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     in_wishlist = serializers.BooleanField(read_only=True)
-    
+
     class Meta:
         model = Product
         fields = [
@@ -127,6 +126,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "reviews_count",
             "main_image",
             "in_wishlist",
+            
         ]
 
 
@@ -259,6 +259,7 @@ class UndetailedProductSerializer(serializers.ModelSerializer):
             "average_rating",
             "reviews_count",
             "main_image",
+            "supplier",
         ]
 
 
@@ -266,4 +267,3 @@ class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = ["id", "name"]
-

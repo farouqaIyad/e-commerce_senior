@@ -1,12 +1,15 @@
-from catalog.models import ProductDetail, Product
-from rest_framework.response import Response
+from catalog.models import ProductDetail
 from django.db import transaction
 from celery import shared_task
 from datetime import datetime
 from decimal import Decimal
 from math import ceil
-from .models import Promotion
-from notifications.tasks import notify_customers
+from .models import Promotion, Coupon, SupplierProfile
+from notifications.tasks import (
+    promo_notify_customers,
+    notify_customers_deserving_coupon,
+)
+
 
 @shared_task(bind=True)
 def promotion_management(self):
@@ -25,7 +28,6 @@ def promotion_management(self):
                 else:
                     promotion.is_active = False
             promotion.save()
-            print(promotion)
 
 
 @shared_task(bind=True)
@@ -41,10 +43,8 @@ def start_promotion(self, promotion_id):
                 product_detail.price - (product_detail.price * Decimal(reduction))
             )
             product_detail.save()
-        notify_customers.delay(promotion)
-        
-                    
-    
+        promo_notify_customers.delay(promotion.id)
+
     return "promotion applied to all products details"
 
 
@@ -59,3 +59,39 @@ def end_promotion(self, promotion_id):
             product_detail.sale_price = None
             product_detail.save()
     return "sale is over"
+
+
+@shared_task(bind=True)
+def coupon_management(self):
+    with transaction.atomic():
+        coupons = Coupon.objects.all()
+        now = datetime.now().date()
+        for coupon in coupons:
+            print(coupon)
+            if coupon.time_end < now:
+                coupon.is_active = False
+            else:
+                if coupon.time_start <= now:
+                    coupon.is_active = True
+
+                else:
+                    coupon.is_active = False
+        coupon.save()
+        if coupon.is_active:
+            give_coupons.delay()
+    return "coupons managed "
+
+
+@shared_task(bind=True)
+def give_coupons(self):
+    from order.models import CustomerProfile
+
+    suppliers = SupplierProfile.objects.filter(coupon__is_active=True)
+    for supplier in suppliers:
+        products_to_earn_coupon = supplier.coupon.products_to_earn
+        users = CustomerProfile.objects.filter(
+            cus__supplier=supplier, cus__products_bought__gte=products_to_earn_coupon
+        ).values_list("user__id", flat=True)
+        if users:
+            notify_customers_deserving_coupon.delay(list(users), supplier.coupon.pk)
+    return "coupons given"

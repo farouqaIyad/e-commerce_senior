@@ -33,3 +33,6 @@ class SupplierProfile(models.Model):
 
     class Meta:
         db_table = "supplier"
+
+    def __str__(self):
+        return '{}'.format(self.user.username)

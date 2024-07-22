@@ -10,16 +10,13 @@ from supplier.models import SupplierProfile
 class Coupon(models.Model):
     name = models.CharField(max_length=255)
     coupon_code = models.CharField(max_length=10)
-    supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
-    discount_value = models.DecimalField(
-        max_digits=7,
-        decimal_places=2,
-        unique=True,
-        null=True,
-        blank=True,
-    )
+    supplier = models.OneToOneField(SupplierProfile, on_delete=models.CASCADE)
+    discount_value = models.IntegerField()
     user_max_use = models.IntegerField(blank=True, null=True)
-    products_to_earn = models.IntegerField(null=False, blank = False)
+    products_to_earn = models.IntegerField(null=False, blank=False)
+    time_start = models.DateField(default="2025-05-04")
+    time_end = models.DateField(default="2025-05-05")
+    is_active = models.BooleanField(default=False)
 
     class Meta:
         db_table = "coupon"
@@ -29,7 +26,9 @@ class UsedCoupons(models.Model):
     coupon_id = models.ForeignKey(
         Coupon, related_name="used_coupons", on_delete=models.CASCADE
     )
-    customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
+    customer = models.ForeignKey(
+        CustomerProfile, on_delete=models.CASCADE, related_name="customer_coupon"
+    )
     times_used = models.IntegerField(default=0)
 
     class Meta:

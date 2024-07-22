@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from Users.models import User
 from .utils import validate_lat, validate_long
-
+from catalog.models import Category
 
 class DriverManager(BaseUserManager):
     def get_queryset(self, *args, **kwargs):
@@ -28,10 +28,23 @@ class DriverProfile(models.Model):
         ("BIKE", "Bike"),
         ("CAR", "Car"),
         ("TRUCK", "Truck"),
-        )
+    )
 
-    vehicle_type = models.CharField(max_length=9,
-                  choices=vehicle_types,blank= False)
-    vehicle_plate = models.CharField(max_length=10,blank=False,unique=True)
-    vehicle_image = models.ImageField(upload_to='driver',default = "drivers/default")
+    vehicle_type = models.CharField(max_length=9, choices=vehicle_types, blank=False)
+    vehicle_plate = models.CharField(max_length=10, blank=False, unique=True)
+    vehicle_image = models.ImageField(upload_to="driver", default="drivers/default")
     is_online = models.BooleanField(default=True)
+
+
+class vehicletypecategory(models.Model):
+    vehicle_types = (
+        ("BIKE", "Bike"),
+        ("CAR", "Car"),
+        ("TRUCK", "Truck"),
+    )
+
+    vehicle_type = models.CharField(max_length=9, choices=vehicle_types, blank=False)
+    category = models.ForeignKey(Category,on_delete=models.CASCADE)
+    
+    class Meta:
+        db_table = 'vehicletypecategory'

@@ -320,8 +320,10 @@ class ProductList(APIView):
                     {"message": "Product created"}, status=status.HTTP_201_CREATED
                 )
             else:
+                print(serializer.errors)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except (Category.DoesNotExist, ProductType.DoesNotExist) as e:
+
             return Response(
                 {"message": "One or more entities not found."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -364,8 +366,8 @@ class ProductDetailView(APIView):
     def put(self, request, slug, format=None):
         product = Product.objects.filter(
             slug=slug, supplier=request.user.supplierprofile
-        )
-        serializer = ProductSerializer(product, data=request.data)
+        ).first()
+        serializer = ProductSerializer(product, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "product updated"})
@@ -450,10 +452,11 @@ class StockDetail(APIView):
 
 # customer
 class BrandList(APIView):
-    def get(self, request,slug,format = None):
-        brand = Brand.objects.filter(brand__category__slug = slug)
-        serializer = BrandSerializer(instance=brand,many = True)
+    def get(self, request, slug, format=None):
+        brand = Brand.objects.filter(brand__category__slug=slug)
+        serializer = BrandSerializer(instance=brand, many=True)
         return Response(serializer.data)
+
 
 class FilterParams(APIView):
 
@@ -474,7 +477,9 @@ class StartUpList(APIView):
         category = Category.objects.filter(level=0)
         serializer = CategorySerializer(instance=category, many=True)
         promotion = Promotion.objects.all()[:3]
-        promotion_serializer = PromotionSerializer(instance=promotion, many=True)
+        promotion_serializer = PromotionSerializer(
+            instance=promotion, many=True, context={"request": request}
+        )
         new_products = Product.objects.with_wishlist_status(request.user).order_by(
             "date_created"
         )[:10]

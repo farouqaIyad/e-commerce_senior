@@ -90,7 +90,7 @@ class Brand(models.Model):
 
 
 class CategoriesBrand(models.Model):
-    brand = models.ForeignKey(Brand, related_name='brand',on_delete=models.CASCADE)
+    brand = models.ForeignKey(Brand, related_name="brand", on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
 
@@ -120,8 +120,8 @@ class Product(models.Model):
     supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     date_created = models.DateField(auto_now_add=True, editable=False)
-    main_price = models.IntegerField(null=True,blank=True)
-    main_sale_price = models.IntegerField(default = 0)
+    main_price = models.IntegerField(null=True, blank=True)
+    main_sale_price = models.IntegerField(default=0)
     reviews_count = models.IntegerField(default=0)
     average_rating = models.FloatField(default=0)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True)
@@ -160,10 +160,14 @@ class ProductDetail(models.Model):
     product = models.ForeignKey(
         Product, related_name="product_detail", on_delete=models.CASCADE
     )
-    price = models.IntegerField(null=False,blank=False)
+    price = models.IntegerField(null=False, blank=False)
     sale_price = models.IntegerField(default=0)
-    color = models.ForeignKey(ProductColor,null=True, blank=True,on_delete=models.CASCADE)
-    size = models.ForeignKey(Size_Value,null=True, blank=True,on_delete=models.CASCADE)
+    color = models.ForeignKey(
+        ProductColor, null=True, blank=True, on_delete=models.CASCADE
+    )
+    size = models.ForeignKey(
+        Size_Value, null=True, blank=True, on_delete=models.CASCADE
+    )
     is_active = models.BooleanField(default=True)
     is_main = models.BooleanField(default=False)
     objects = models.Manager()
@@ -208,7 +212,10 @@ class ProductImage(models.Model):
 
     def save(self, *args, **kwargs):
         if self.is_main:
-            self.product.main_image = self.image_url
+            self.product.main_image = (
+                "https://donkey-casual-python.ngrok-free.app/media/products/"
+                + str(self.image_url)
+            )
             self.product.save()
         return super().save(*args, **kwargs)
 

@@ -21,14 +21,7 @@ class ShoppingCart(models.Model):
     products = models.ManyToManyField(
         ProductDetail, blank=True, through="ShoppingCartProducts"
     )
-    total_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0.00,
-        unique=False,
-        null=False,
-        blank=False,
-    )
+    total_price = models.IntegerField(null=False, blank=False, default=0)
 
     class Meta:
         db_table = "shoppingcart"
@@ -41,7 +34,9 @@ class ShoppingCartProducts(models.Model):
     shopping_cart = models.ForeignKey(
         ShoppingCart, related_name="shopping_cart", on_delete=models.CASCADE
     )
-    product = models.ForeignKey(ProductDetail, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        ProductDetail, related_name="cart_product_det", on_delete=models.CASCADE
+    )
     quantity = models.IntegerField(default=1)
 
     class Meta:

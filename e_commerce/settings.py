@@ -18,6 +18,7 @@ from celery.schedules import crontab
 
 load_dotenv()
 from firebase_admin import initialize_app
+
 FIREBASE_APP = initialize_app()
 GOOGLE_APPLICATION_CREDENTIALS = r"C:\Users\NITRO 5\Downloads\ecommerce-79ee2-firebase-adminsdk-47gdo-6740fe6854.json"
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
@@ -64,18 +65,19 @@ INSTALLED_APPS = [
     "promotion",
     "supplier",
     "driver",
-    'notifications',
+    "notifications",
     # external applications
     "rest_framework_simplejwt",
     "corsheaders",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "mptt",
     "debug_toolbar",
     "django_celery_results",
     "django_celery_beat",
     "django_extensions",
     "channels",
-    "fcm_django"
+    "fcm_django",
 ]
 
 
@@ -219,6 +221,8 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(
         days=1
     ),  # Optional: Change refresh token lifetime
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": True,
 }
 
 
@@ -280,4 +284,3 @@ CHANNEL_LAYERS = {
     },
 }
 ASGI_APPLICATION = "e_commerce.asgi.application"
-

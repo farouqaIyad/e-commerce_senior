@@ -15,7 +15,11 @@ app.conf.beat_schedule = {
         "task": "promotion.tasks.promotion_management",
         "schedule": crontab(hour=1, minute=00),
         #'args':()
-    }
+    },
+    "manage coupons": {
+        "task": "promotion.tasks.coupon_management",
+        "schedule": crontab(hour=16, minute=28),
+    },
 }
 app.conf.timezone = "UTC"
 

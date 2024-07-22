@@ -5,7 +5,7 @@ from .models import SupplierProfile, Supplier
 
 class SupplierProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    commercial_recored = serializers.ImageField(required=True)
+    commercial_recored = serializers.ImageField(required=True, use_url=True)
 
     @staticmethod
     def setup_eager_loading(queryset):
@@ -27,3 +27,19 @@ class SupplierProfileSerializer(serializers.ModelSerializer):
             "is_approved",
         ]
         read_only_fields = ["is_approved", "user"]
+
+
+
+
+class OrderSupplierSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SupplierProfile
+        fields = [
+            "city",
+            "district",
+            "details",
+            "phone_number",
+            "latitude",
+            "longitude",
+        ]

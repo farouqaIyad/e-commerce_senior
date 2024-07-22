@@ -18,42 +18,34 @@ class SupplierSignupAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
-        return Response({"message":'hello'})
-        # user_serializer = UserSerializer(data=request.data)
-        # profile_serializer = SupplierProfileSerializer(data=request.data)
-        # if user_serializer.is_valid() and profile_serializer.is_valid():
-        #     user_data = user_serializer.validated_data
-        #     profile_data = profile_serializer.validated_data
-        #     user = Supplier.objects.create_user(**user_data)
-        #     profile_data["user"] = user
-        #     supplier_profile = SupplierProfile.objects.create(**profile_data)
-        #     token = RefreshToken.for_user(user)
+        user_serializer = UserSerializer(data=request.data)
+        profile_serializer = SupplierProfileSerializer(data=request.data)
+        if user_serializer.is_valid() and profile_serializer.is_valid():
+            user_data = user_serializer.validated_data
+            profile_data = profile_serializer.validated_data
+            user = Supplier.objects.create_user(**user_data)
+            profile_data["user"] = user
+            supplier_profile = SupplierProfile.objects.create(**profile_data)
+            token = RefreshToken.for_user(user)
 
-        #     return Response(
-        #         {
-        #             "token": str(token.access_token),
-        #         },
-        #         status=status.HTTP_201_CREATED,
-        #     )
-        # else:
-        #     errors = {}
-        #     errors.update(user_serializer.errors)
-        #     errors.update(profile_serializer.errors)
-        #     print(user_serializer.errors)
-        #     print(profile_serializer.errors)
+            return Response(
+                {
+                    "token": str(token.access_token),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            errors = {}
+            errors.update(user_serializer.errors)
+            errors.update(profile_serializer.errors)
+            print(user_serializer.errors)
+            print(profile_serializer.errors)
 
-        #     return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SupplierList(APIView):
     permission_classes = [IsSupplierOrReadOnly]
-
-    def get(self, request, format=None):
-        suppliers = SupplierProfile.objects.all()
-        suppliers = SupplierProfileSerializer.setup_eager_loading(suppliers)
-        serializer = SupplierProfileSerializer(instance=suppliers, many=True)
-        return Response(serializer.data)
 
     def put(self, request, format=None):
         serializer = SupplierProfileSerializer(
@@ -69,7 +61,7 @@ class SupplierList(APIView):
 
     def delete(self, request, format=None):
         supplier = SupplierProfile.objects.filter(user=request.user).first()
-        supplier.delete()
+        # supplier.delete()
         return Response(
             {"message": "supplier deleted"}, status=status.HTTP_204_NO_CONTENT
         )
@@ -78,10 +70,11 @@ class SupplierList(APIView):
 class SupplierDetail(APIView):
     permission_classes = [IsSupplierOrReadOnly]
 
-    def get(self, request, pk, format=None):
-        supplier = SupplierProfile.objects.get(pk=pk)
-        serializer = SupplierProfileSerializer(supplier)
-        return Response({"supplier": serializer.data})
+    def get(self, request, format=None):
+        serializer = SupplierProfileSerializer(
+            instance=request.user.supplierprofile, context={"request": request}
+        )
+        return Response(serializer.data)
 
 
 class ApproveSupplier(APIView):
@@ -92,3 +85,19 @@ class ApproveSupplier(APIView):
         supplier.is_approved = request.data["is_approved"]
         supplier.save()
         return Response({"message": "supplier approval state changed"})
+
+
+class AdminViewSupplier(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get(self, request, format=None):
+        if "is_active" in request.data:
+            supplier = SupplierProfile.objects.filter(
+                is_active=request.data["is_active"]
+            )
+        else:
+            supplier = SupplierProfile.objects.all()
+        serializer = SupplierProfileSerializer(
+            instance=supplier, many=True, context={"request": request}
+        )
+        return Response(serializer.data)

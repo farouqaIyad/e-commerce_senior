@@ -35,7 +35,7 @@ def save_product_details(
         if size_id:
             try:
                 size = Size_Value.objects.get(id=size_id)
-                product_detail.size=size
+                product_detail.size = size
             except Size_Value.DoesNotExist:
                 return "not found"
 

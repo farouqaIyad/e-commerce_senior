@@ -17,6 +17,7 @@ class WishlistSerializer(serializers.ModelSerializer):
         model = ProductDetail
         fields = ["product", "id", "color", "size", "price", "sale_price"]
 
+
 class DetailedSerializer(serializers.ModelSerializer):
     product = UndetailedProductSerializer(read_only=True)
     color = serializers.StringRelatedField()
@@ -25,16 +26,21 @@ class DetailedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductDetail
-        fields = ["product", "id", "color", "size", "price", "sale_price","stock"]
+        fields = ["product", "id", "color", "size", "price", "sale_price", "stock"]
 
 
 class ShoppingCartProductsSerializer(serializers.ModelSerializer):
     product = DetailedSerializer(read_only=True)
 
-
     @staticmethod
     def setup_eager_loading(queryset):
-        queryset = queryset.select_related("product", "product__size", "product__color","product__product","product__stock")
+        queryset = queryset.select_related(
+            "product",
+            "product__size",
+            "product__color",
+            "product__product",
+            "product__stock",
+        )
         return queryset
 
     class Meta:
