@@ -24,13 +24,13 @@ class CouponList(APIView):
     permission_classes = [IsSupplierOrReadOnly]
 
     def post(self, request, format=None):
-        supplier_profile = SupplierProfile.objects.get(pk=request.user.id)
         serializer = CouponSerializer(
-            data=request.data, context={"supplier": supplier_profile}
+            data=request.data, context={"supplier": request.user.supplierprofile}
         )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
@@ -108,6 +108,13 @@ class PromotionDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class PromotionFilter(APIView):
+    def post(self, request, format=None):
+        promotions = Promotion.objects.filter(is_active=request.data["is_active"])
+        serializer = PromotionSerializer(instance=promotions, many=True)
+        return Response(serializer.data)
+
+
 class ProductOnPromotionList(APIView):
     def post(self, request, pk, format=None):
         products = request.data.get("products", [])
@@ -119,6 +126,8 @@ class ProductOnPromotionList(APIView):
         return Response({"Message": "product added to promotions"})
 
     def get(self, request, pk, format=None):
-        products = Product.objects.filter(products_on_promotion__promotion_id=pk)
+        products = Product.objects.with_wishlist_status(request.user).filter(
+            products_on_promotion__promotion_id=pk
+        )
         serializer = ProductSerializer(instance=products, many=True)
         return Response({"products": serializer.data})

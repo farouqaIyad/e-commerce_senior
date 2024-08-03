@@ -26,13 +26,20 @@ def shopping_cart_products_post_save(sender, created, instance, **kwargs):
         total_cost = 0
         instance.shopping_cart.total_price = 0
         for object in objects:
-            total_cost += object.product.price * object.quantity
+            if object.product.sale_price == 0:
+                total_cost += object.product.price * object.quantity
+            else:
+                total_cost += object.product.sale_price * object.quantity
         instance.shopping_cart.total_price = total_cost
         instance.shopping_cart.save()
 
 
 @receiver(pre_delete, sender=ShoppingCartProducts)
 def shopping_cart_product_pre_delete(sender, instance, **kwargs):
-    product_price = instance.product.price * instance.quantity
+    if instance.product.sale_price == 0:
+        product_price = instance.product.price * instance.quantity
+    else:
+        product_price = instance.product.sale_price * instance.quantity
+
     instance.shopping_cart.total_price -= product_price
     instance.shopping_cart.save()

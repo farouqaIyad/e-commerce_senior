@@ -76,7 +76,7 @@ def coupon_management(self):
 
                 else:
                     coupon.is_active = False
-        coupon.save()
+            coupon.save()
         if coupon.is_active:
             give_coupons.delay()
     return "coupons managed "

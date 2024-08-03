@@ -6,6 +6,7 @@ from .views import (
     PromotionList,
     ProductOnPromotionList,
     PromotionDetail,
+    PromotionFilter,
 )
 
 urlpatterns = [
@@ -14,5 +15,6 @@ urlpatterns = [
     path("use_coupon/", UseCoupon.as_view()),
     path("promotion/", PromotionList.as_view()),
     path("promotion/<int:pk>", PromotionDetail.as_view()),
+    path("promotion/filter", PromotionFilter.as_view()),
     path("promotion/products/<int:pk>", ProductOnPromotionList.as_view()),
 ]

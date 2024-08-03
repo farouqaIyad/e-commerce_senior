@@ -123,7 +123,7 @@ class Product(models.Model):
     main_price = models.IntegerField(null=True, blank=True)
     main_sale_price = models.IntegerField(default=0)
     reviews_count = models.IntegerField(default=0)
-    average_rating = models.FloatField(default=0)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2,default=0.00)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True)
     main_image = models.CharField(max_length=255)
 

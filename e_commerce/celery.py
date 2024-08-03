@@ -13,12 +13,12 @@ app.config_from_object(settings, namespace="CELERY")
 app.conf.beat_schedule = {
     "check promotions that are valid": {
         "task": "promotion.tasks.promotion_management",
-        "schedule": crontab(hour=1, minute=00),
+        "schedule": crontab(hour=15, minute=17),
         #'args':()
     },
     "manage coupons": {
         "task": "promotion.tasks.coupon_management",
-        "schedule": crontab(hour=16, minute=28),
+        "schedule": crontab(hour=14, minute=00),
     },
 }
 app.conf.timezone = "UTC"

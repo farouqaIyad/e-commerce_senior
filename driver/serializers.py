@@ -1,4 +1,4 @@
-from .models import DriverProfile,vehicletypecategory
+from .models import DriverProfile, vehicletypecategory
 from rest_framework import serializers
 from Users.serializers import UserSerializer
 from django.contrib.sites.models import Site
@@ -32,5 +32,3 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             "is_online",
         ]
         read_only_fields = ["is_approved", "user"]
-
-

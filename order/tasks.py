@@ -5,22 +5,34 @@ from catalog.models import Stock
 from driver.models import vehicletypecategory
 
 
-@shared_task(bind = True)
-def set_pick_up_method(self,order_id):
-    truck = vehicletypecategory.objects.filter(vehicle_type='TRUCK').values_list('category',flat = True)
-    car = vehicletypecategory.objects.filter(vehicle_type='CAR').values_list('category',flat = True)
+@shared_task(bind=True)
+def set_pick_up_method(self, order_id):
+    truck = vehicletypecategory.objects.filter(vehicle_type="TRUCK").values_list(
+        "category", flat=True
+    )
+    car = vehicletypecategory.objects.filter(vehicle_type="CAR").values_list(
+        "category", flat=True
+    )
 
-    order = Order.objects.get(pk = order_id)
-    order_category = order.values_list("order__products__product__category",flat = True).distinct()
-    if order_category in truck:
-        order.pick_up_method = "TRUCK"
-    elif order_category in car:
-        order.pick_up_method = "CAR"
-    else:
-        order.pick_up_method = 'BIKE'
+    order = Order.objects.filter(pk=order_id)
+    order_categories = order.values_list(
+        "order__products__product__category", flat=True
+    ).distinct()
+    order = order[0]
+    bool = False
+    for order_category in order_categories:
+        if order_category in truck:
+            order.pick_up_method = "TRUCK"
+            order.save()
+            return "set pick up method for order 1"
+        elif order_category in car:
+            order.pick_up_method = "CAR"
+            bool = True
+        elif not bool:
+            order.pick_up_method = "BIKE"
     order.save()
-    return 'set pick up method for order'
 
+    return "set pick up method for order 123"
 
 
 @shared_task(bind=True)
@@ -45,8 +57,8 @@ def add_product_bought_from_supplier(self, order):
 
 
 @shared_task(bind=True)
-def deduct_from_products_stock(self, order):
-    order = Order.objects.get(order=order)
+def deduct_from_products_stock(self, order_id):
+    order = Order.objects.get(pk=order_id)
     products = OrderProducts.objects.filter(order=order)
     with transaction.atomic():
         for product in products:
@@ -54,6 +66,7 @@ def deduct_from_products_stock(self, order):
             stock.quantity_in_stock -= product.quantity
             stock.products_sold += product.quantity
             stock.save()
+    return "deduct from products is successfull 123"
 
 
 @shared_task(bind=True)
@@ -66,5 +79,3 @@ def return_to_stock(self, order):
             stock.quantity_in_stock += product.quantity
             stock.products_sold -= product.quantity
             stock.save()
-
-

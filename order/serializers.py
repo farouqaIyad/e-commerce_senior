@@ -73,8 +73,6 @@ class OrderProductsSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
-    user_address = serializers.SerializerMethodField()
-    supplier_locations = serializers.SerializerMethodField()
     order = OrderProductsSerializer(many=True)
 
     def setup_eager_loading(queryset):
@@ -106,31 +104,33 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "date_created",
             "date_deliverd",
             "order_status",
-            "user_address",
-            "supplier_locations",
             "order",
+            'pick_up_method'
         ]
         read_only_fields = ("date_created", "date_deliverd", "order_status", "cart")
 
 
 
 class DriverOrderSerializer(serializers.ModelSerializer):
-    user_addresss = AddressSerializer(read_only = True)
+    order_address = serializers.StringRelatedField()
+    distance = serializers.SerializerMethodField()
 
-    def get_supplier_locations(self, obj):  
-        products = obj.order.values_list("products")
-        suppliers = SupplierProfile.objects.filter(
-            product__product_detail__in=products
-        ).distinct()
-        locations = {}
-        locations['start'] = (self.context.get('long'),self.context.get('lat'))
-        locations['end'] = (obj.order_address.longitude, obj.order_address.latitude)
-        for supplier in suppliers:
-            locations[supplier] = (supplier.longitude,supplier.latitude)
-        
-        distance = calculate_shortest_distance(locations)
-        return distance
-
+    def get_distance(self, obj):  
+        if obj.order_address.longitude != 0:
+            products = obj.order.values_list("products")
+            suppliers = SupplierProfile.objects.filter(
+                product__product_detail__in=products
+            ).distinct()
+            locations = {}
+            locations['start'] = (self.context.get('long'),self.context.get('lat'))
+            locations['end'] = ( obj.order_address.longitude,obj.order_address.latitude)
+            for supplier in suppliers:
+                locations[supplier] = (supplier.longitude,supplier.latitude,)
+            
+            distance = calculate_shortest_distance(locations)
+            return distance
+        else:
+            return None
 
 
     class Meta:
@@ -138,17 +138,19 @@ class DriverOrderSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'date_created',
-            'user_address',
-            'supplier_locations'
+            'order_address',
+            'distance',
+            "order_status"
         ]
 
 
 
 class DriverDetailedOrderSerializer(serializers.ModelSerializer):
     supplier_location = serializers.SerializerMethodField()
-    user_addresss = AddressSerializer(read_only = True)
+    order_address = AddressSerializer(read_only = True)
+    order = OrderProductsSerializer(many = True)
 
-    def get_supplier_locations(self, obj):  
+    def get_supplier_location(self, obj):  
         products = obj.order.values_list("products")
         suppliers = SupplierProfile.objects.filter(
             product__product_detail__in=products
@@ -156,12 +158,40 @@ class DriverDetailedOrderSerializer(serializers.ModelSerializer):
         serializer = OrderSupplierSerializer(instance=suppliers,many = True)
 
         return serializer.data
-
+    
+    def setup_eager_loading(queryset):
+        queryset = queryset.prefetch_related(
+            "order",
+            "order__products",
+            "order__products__size",
+            "order__products__color",
+            "order__products__product",
+            
+        ).select_related("order_address")
+        return queryset
+    
     class Meta:
         model = Order
         fields = [
             'id',
             'date_created',
-            'user_address',
-            'supplier_locations'
+            'order_address',
+            'order_status',
+            'supplier_location',
+            'order'
+        ]
+
+
+    
+
+
+class DeliverSeializer(serializers.ModelSerializer):
+    delivery_image = serializers.ImageField(required=True, use_url=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'order_status',
+            'date_deliverd',
+            'delivery_image'
         ]

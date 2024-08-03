@@ -35,4 +35,4 @@ class SupplierProfile(models.Model):
         db_table = "supplier"
 
     def __str__(self):
-        return '{}'.format(self.user.username)
+        return "{}".format(self.user.username)

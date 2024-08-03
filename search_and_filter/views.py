@@ -15,23 +15,17 @@ class SearchProduct(APIView, LimitOffsetPagination):
     product_serializer = ProductSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, query):
+    def post(self, request, query):
         model = SentenceTransformer("all-MiniLM-L6-v2")
         query_vector = model.encode(query)
-        if 'category' in request.data:
-            results = (
-                Product.objects.with_wishlist_status(request.user)
-                .annotate(distance=CosineDistance("embedding", query_vector))
-                .filter(distance__lte=0.75,category = request.data['category'])
-                .order_by("distance")[:25]
+        results = (
+            Product.objects.with_wishlist_status(request.user)
+            .annotate(distance=CosineDistance("embedding", query_vector))
+            .filter(
+                distance__lte=0.75,
             )
-        else:
-            results = (
-                Product.objects.with_wishlist_status(request.user)
-                .annotate(distance=CosineDistance("embedding", query_vector))
-                .filter(distance__lte=0.75,)
-                .order_by("distance")[:25]
-            )
+            .order_by("distance")[:25]
+        )
         serializer = self.product_serializer(results, many=True)
 
         return Response({"products": serializer.data})
@@ -61,7 +55,6 @@ class FiltersList(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
-        print(request.data)
         filters = {}
         if "min_price" in request.data:
             filters["main_price__gte"] = request.data["min_price"]
@@ -80,7 +73,6 @@ class FiltersList(APIView):
             .distinct()
         )
         serializer = ProductSerializer(instance=queryset, many=True)
-        print(serializer.data)
         return Response({"products": serializer.data})
 
 
@@ -118,7 +110,7 @@ class Newly_added(APIView):
 class Highest_rating(APIView):
     def get(self, request, format=None):
         products = Product.objects.with_wishlist_status(request.user).order_by(
-            "average_rating"
+            "-average_rating"
         )
         serializer = ProductSerializer(instance=products, many=True)
         return Response({"best_rating": serializer.data})

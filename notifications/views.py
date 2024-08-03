@@ -12,12 +12,14 @@ class notificationList(APIView):
         serializer = notificationSerializer(instance=notifications, many=True)
         return Response({"message": serializer.data})
 
-    def put(self, request, format=None):
+    def post(self, request, format=None):
         ids = request.data["notifications"]
         notifications = notification.objects.filter(id__in=ids)
         for noti in notifications:
             noti.is_seen = True
             noti.save()
+
+        return Response({"message": "seen"})
 
 
 class Not(APIView):

@@ -50,18 +50,21 @@ from django.db.models import Avg, Max, Min, Sum
 class CategoryList(APIView):
 
     def post(self, request, format=None):
-        name, parent = request.data.values()
+        print(request.data)
+        name, parent, image_url = request.data.values()
         try:
             if parent:
                 parent = Category.objects.get(id=parent)
 
-                category = Category.objects.create(name=name, parent=parent)
+                category = Category.objects.create(
+                    name=name, parent=parent, image_url=image_url
+                )
                 return Response(
                     {"message": "created category"}, status=status.HTTP_201_CREATED
                 )
 
             elif not parent:
-                category = Category.objects.create(name=name)
+                category = Category.objects.create(name=name, image_url=image_url)
                 return Response(
                     {"message": "created category"}, status=status.HTTP_201_CREATED
                 )
@@ -94,7 +97,7 @@ class CategoryDetail(APIView):
 
     def put(self, request, slug, format=None):
         category = Category.objects.filter(slug=slug).first()
-        serializer = CategorySerializer(category, data=request.data)
+        serializer = CategorySerializer(category, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "category updated"})
@@ -386,7 +389,7 @@ class ProductDetailView(APIView):
 class ProductDetailList(APIView):
 
     def get(self, request, slug, format=None):
-        product = Product.objects.with_wishlist_status(request.user).filter(slug=slug)
+        product = Product.objects.with_wishlist_status(request.user).filter(slug=slug,product_detail__stock__quantity_in_stock__gte=1)
         product = ProductWithReviewsSerializer.setup_eager_loading(product)
         product_serializer = ProductWithReviewsSerializer(product[0])
 
@@ -401,6 +404,7 @@ class ProductDetailDetail(APIView):
     permission_classes = [IsSupplierOrReadOnly]
 
     def put(self, request, pk, format=None):
+        print
         product_detail = ProductDetail.objects.get(pk=pk)
         serializer = ProductDetailSerializer(product_detail, data=request.data)
         if serializer.is_valid():
@@ -436,14 +440,17 @@ class StockList(APIView):
 
 
 class StockDetail(APIView):
-    permission_classes = [IsSupplierOrReadOnly]
 
     def put(self, request, pk, format=None):
-        stock = Stock.objects.get(id=pk)
-        serializer = StockSerializer(instance=stock, data=request.data)
+        print(request.data)
+        stock = Stock.objects.get(pk=pk)
+        print(stock)
+        serializer = StockSerializer(
+            instance=stock, data=request.data, context=request.data
+        )
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": {"stock data updated"}})
+            return Response({"message": "stock data updated"})
 
     def delete(self, request, pk, format=None):
         stocks = Stock.objects.get(id=pk)
@@ -462,14 +469,25 @@ class FilterParams(APIView):
 
     def post(self, request, format=None):
         category = Category.objects.filter(slug=request.data["category"]).first()
-        brands = Brand.objects.filter(product__category=category).distinct()
-        serializer = BrandSerializer(instance=brands, many=True)
-        sizes = Size_Value.objects.filter(
-            productdetail__product__category__slug=request.data["category"]
-        ).distinct()
-        size_serializer = ProductSizeValueSerializer(instance=sizes, many=True)
-
-        return Response({"brands": serializer.data, "sizes": size_serializer.data})
+        if category:
+            products_with_brands = (
+                Product.objects.filter(category=category)
+                .select_related("brand")
+                .values_list("pk", "brand__pk")
+            )
+            product_pks = [product[0] for product in products_with_brands]
+            brand_pks = [product[1] for product in products_with_brands]
+            brands = Brand.objects.filter(pk__in=brand_pks)
+            serializer = BrandSerializer(instance=brands, many=True)
+            sizes = Size_Value.objects.filter(
+                productdetail__product__in=product_pks
+            ).distinct()
+            size_serializer = ProductSizeValueSerializer(instance=sizes, many=True)
+            return Response({"brands": serializer.data, "sizes": size_serializer.data})
+        else:
+            product = Product.objects.filter(product_detail__size__pk=4)
+            print(product)
+            return Response({"no category found"})
 
 
 class StartUpList(APIView):
@@ -499,4 +517,40 @@ class StartUpList(APIView):
                 "new products": new_products_serializer.data,
                 "best_rating": highest_rating_products_serializer.data,
             }
+        )
+
+
+class CategoryFilter(APIView):
+
+    def post(self, request, format=None):
+        category = Category.objects.filter(is_active=request.data["is_active"])
+        serializer = CategorySerializer(instance=category, many=True)
+        return Response(serializer.data)
+
+
+class Analysis(APIView):
+    def post(self, request, format=None):
+        import pandas as pd
+
+        sales_data = pd.read_excel(
+            r"C:\Users\NITRO 5\Desktop\salesforcourse-4fe2kehu2.xlsx"
+        )
+        sales_data = sales_data[:1000]
+
+        sales_data["Earnings"] = sales_data["Unit Cost"] * sales_data["Unit Price"]
+
+        earnings_by_supplier = sales_data.groupby("Supplier")["Earnings"].sum()
+        customers_count = 39354
+        earnings_dict = [
+            {"supplier": supplier, "earned": earnings}
+            for supplier, earnings in earnings_by_supplier.items()
+        ]
+
+        product = Product.objects.order_by(
+            "product_detail__stock__products_sold"
+        ).distinct()[0]
+        from django.http import JsonResponse
+
+        return Response(
+            {"best seller": product.name, "earnings": earnings_dict}, safe=False
         )

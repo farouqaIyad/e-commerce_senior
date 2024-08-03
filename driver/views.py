@@ -24,7 +24,6 @@ def room(request, room_name):
 
 
 class DriverList(APIView):
-    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
         user_serializer = UserSerializer(data=request.data)
@@ -56,7 +55,7 @@ class DriverList(APIView):
             errors = {}
             errors.update(user_serializer.errors)
             errors.update(profile_serializer.errors)
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DriverDetail(APIView):
@@ -96,13 +95,21 @@ class ApproveDriver(APIView):
 
 
 class AdminViewDriver(APIView):
-    permission_classes = [IsAdminOrReadOnly]
 
-    def get(self, request, format=None):
-        if "is_active" in request.data:
-            drivers = DriverProfile.objects.filter(is_active=request.data["is_active"])
+    def post(self, request, format=None):
+        if "is_approved" in request.data:
+            drivers = DriverProfile.objects.filter(
+                is_approved=request.data["is_approved"]
+            )
         else:
             drivers = DriverProfile.objects.all()
+        serializer = DriverProfileSerializer(
+            instance=drivers, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    def get(self, request, format=None):
+        drivers = DriverProfile.objects.all()
         serializer = DriverProfileSerializer(
             instance=drivers, many=True, context={"request": request}
         )

@@ -1,10 +1,11 @@
-from .models import Coupon, Promotion, ProductOnPromotion
+from .models import Coupon, Promotion, ProductOnPromotion, SupplierProfile
 from rest_framework import serializers
 from django.db.models import Avg
 from django.db import models
 
 
 class CouponSerializer(serializers.ModelSerializer):
+    supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
 
     def create(self, validated_data):
         validated_data["supplier"] = self.context.get("supplier")
@@ -13,7 +14,6 @@ class CouponSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coupon
         fields = [
-            "supplier",
             "id",
             "name",
             "coupon_code",

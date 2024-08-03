@@ -4,6 +4,7 @@ from Users.models import User
 from .utils import validate_lat, validate_long
 from catalog.models import Category
 
+
 class DriverManager(BaseUserManager):
     def get_queryset(self, *args, **kwargs):
         results = super().get_queryset(*args, **kwargs)
@@ -44,7 +45,7 @@ class vehicletypecategory(models.Model):
     )
 
     vehicle_type = models.CharField(max_length=9, choices=vehicle_types, blank=False)
-    category = models.ForeignKey(Category,on_delete=models.CASCADE)
-    
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
     class Meta:
-        db_table = 'vehicletypecategory'
+        db_table = "vehicletypecategory"

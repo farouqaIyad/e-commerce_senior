@@ -126,7 +126,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "reviews_count",
             "main_image",
             "in_wishlist",
-            
         ]
 
 
@@ -208,6 +207,30 @@ class ProductWithReviewsSerializer(serializers.ModelSerializer):
 class StockSerializer(serializers.ModelSerializer):
     product_detail = ProductDetailSerializer(read_only=True)
 
+    def update(self, instance, validated_data):
+
+        product_data = {}
+        if "color" in self.context:
+            if self.context.get("color"):
+                product_data["color"] = self.context.get("color")
+        if "size" in self.context:
+            if self.context.get("size"):
+                product_data["size"] = self.context.get("size")
+        if "price" in self.context:
+            if self.context.get("price"):
+                product_data["price"] = self.context.get("price")
+        if "is_active" in self.context:
+            if not self.context.get("is_active"):
+                product_data["is_active"] = self.context.get("is_active")
+        if product_data:
+            ProductDetail.objects.filter(stock=instance).update(**product_data)
+
+        if "quantity_in_stock" in validated_data:
+            if validated_data.pop("quantity_in_stock"):
+                instance.quantity_in_stock = validated_data.pop("quantity_in_stock")
+            instance.save()
+        return instance
+
     class Meta:
         model = Stock
         fields = ["id", "product_detail", "quantity_in_stock", "products_sold"]
@@ -260,6 +283,17 @@ class UndetailedProductSerializer(serializers.ModelSerializer):
             "reviews_count",
             "main_image",
             "supplier",
+        ]
+
+
+class OrderProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "slug",
+            "main_image",
         ]
 
 

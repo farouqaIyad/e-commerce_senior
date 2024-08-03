@@ -17,12 +17,15 @@ from .views import (
     StockDetail,
     FilterParams,
     BrandList,
+    CategoryFilter,
+    Analysis,
 )
 from django.urls import path
 
 urlpatterns = [
     path("category/", CategoryList.as_view()),
     path("category/<slug:slug>", CategoryDetail.as_view()),
+    path("category_filter/", CategoryFilter.as_view()),
     path("product_type/", ProductTypeList.as_view()),
     path("product_type/<slug:slug>", ProductTypeDetail.as_view()),
     path("product_size/", ProductSizeList.as_view()),
@@ -34,9 +37,10 @@ urlpatterns = [
     path("product/<slug:slug>", ProductDetailList.as_view()),
     path("product_detail/<int:pk>", ProductDetailDetail.as_view()),
     path("product/stock/<slug:slug>", StockList.as_view()),
-    path("product/stock/<int:pk>", StockDetail.as_view()),
+    path("product_stock/<int:pk>", StockDetail.as_view()),
     path("startup/", StartUpList.as_view()),
     path("supplier/products/", SupplierPageList.as_view()),
     path("filter/params", FilterParams.as_view()),
     path("brand/<slug:slug>", BrandList.as_view()),
+    path("analysis/", Analysis.as_view()),
 ]

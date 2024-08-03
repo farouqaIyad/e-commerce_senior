@@ -131,7 +131,7 @@ class CustomerDetail(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # def delete(self, request, format=None):
-    #     customer = CustomerProfile.objects.get(pk=pk)
-    #     customer.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, format=None):
+        customer = CustomerProfile.objects.get(pk=20)
+        customer.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
