@@ -520,37 +520,5 @@ class StartUpList(APIView):
         )
 
 
-class CategoryFilter(APIView):
-
-    def post(self, request, format=None):
-        category = Category.objects.filter(is_active=request.data["is_active"])
-        serializer = CategorySerializer(instance=category, many=True)
-        return Response(serializer.data)
 
 
-class Analysis(APIView):
-    def post(self, request, format=None):
-        import pandas as pd
-
-        sales_data = pd.read_excel(
-            r"C:\Users\NITRO 5\Desktop\salesforcourse-4fe2kehu2.xlsx"
-        )
-        sales_data = sales_data[:1000]
-
-        sales_data["Earnings"] = sales_data["Unit Cost"] * sales_data["Unit Price"]
-
-        earnings_by_supplier = sales_data.groupby("Supplier")["Earnings"].sum()
-        customers_count = 39354
-        earnings_dict = [
-            {"supplier": supplier, "earned": earnings}
-            for supplier, earnings in earnings_by_supplier.items()
-        ]
-
-        product = Product.objects.order_by(
-            "product_detail__stock__products_sold"
-        ).distinct()[0]
-        from django.http import JsonResponse
-
-        return Response(
-            {"best seller": product.name, "earnings": earnings_dict}, safe=False
-        )
