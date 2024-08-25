@@ -57,7 +57,7 @@ def calculate_shortest_distance(locations):
     total_distance = 0
     for i in range(len(path_indices) - 1):
         total_distance += distance_matrix[path_indices[i]][path_indices[i + 1]]
-    return round(total_distance,2)
+    return round(total_distance, 2)
 
 
 # path_indices = nearest_neighbor_variant(distance_matrix, start_index, end_index)

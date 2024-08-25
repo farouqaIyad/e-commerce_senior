@@ -1,5 +1,12 @@
 from .models import Order, Address, OrderProducts
-from .serializers import OrderSerializer, AddressSerializer, OrderDetailSerializer,DriverOrderSerializer,DriverDetailedOrderSerializer,DeliverSeializer
+from .serializers import (
+    OrderSerializer,
+    AddressSerializer,
+    OrderDetailSerializer,
+    DriverOrderSerializer,
+    DriverDetailedOrderSerializer,
+    DeliverSeializer,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,6 +17,7 @@ from wishlist_cart.models import ShoppingCart
 from .tasks import return_to_stock
 from django.db import transaction
 from datetime import datetime
+
 
 class AddressList(APIView):
     permission_classes = [IsAuthenticated]
@@ -104,7 +112,7 @@ class OrderDetail(APIView):
         order = Order.objects.get(pk=pk)
         if order.order_status == "Preprocessing":
             order.order_status = "Cancelled"
-            order.save()    
+            order.save()
             return_to_stock.delay()
             return Response({"message": "canceled your order"})
         else:
@@ -116,51 +124,70 @@ class OrderDetail(APIView):
 class DriverOrderList(APIView):
     def post(self, request, format=None):
         from .serializers import DriverOrderSerializer
+
         driver = request.user.driverprofile
-        orders = Order.objects.filter(pick_up_method = driver.vehicle_type,order_status = 'Preprocessing',driver = None)[:10]
+        orders = Order.objects.filter(
+            pick_up_method=driver.vehicle_type,
+            order_status="Preprocessing",
+            driver=None,
+        )[:10]
         if orders:
-            seiralizer = DriverOrderSerializer(instance=orders, many = True,context={"lat":request.data['lat'],"long":request.data['long']})
-            return Response({"message":seiralizer.data})
+            seiralizer = DriverOrderSerializer(
+                instance=orders,
+                many=True,
+                context={"lat": request.data["lat"], "long": request.data["long"]},
+            )
+            return Response({"message": seiralizer.data})
         else:
-            return Response({"message":[]})
-    
+            return Response({"message": []})
+
 
 class DriverOrderDetail(APIView):
-    def get(self, request, pk, format = None):
-        order = Order.objects.filter(pk = pk)
+    def get(self, request, pk, format=None):
+        order = Order.objects.filter(pk=pk)
         order = DriverDetailedOrderSerializer.setup_eager_loading(order)
         serializer = DriverDetailedOrderSerializer(instance=order[0])
         return Response(serializer.data)
-       
+
 
 class MyOrders(APIView):
-    def post(self, request, format = None):
-        order = Order.objects.filter(driver = request.user.driverprofile)
-        serializer = DriverOrderSerializer(instance=order,many = True,context={"lat":request.data['lat'],"long":request.data['long']})
-        return Response({"message":serializer.data})
-     
-    
+    def post(self, request, format=None):
+        order = Order.objects.filter(driver=request.user.driverprofile)
+        serializer = DriverOrderSerializer(
+            instance=order,
+            many=True,
+            context={"lat": request.data["lat"], "long": request.data["long"]},
+        )
+        return Response({"message": serializer.data})
+
+
 class DriverFlagPickedUp(APIView):
-    def post(self, request,pk,format = None):
-        order = Order.objects.get(pk = pk)
+    def post(self, request, pk, format=None):
+        order = Order.objects.get(pk=pk)
         with transaction.atomic():
-            order.order_status = 'Picked up'
+            order.order_status = "Picked up"
             order.driver = request.user.driverprofile
             order.save()
-        return Response({"message":"picked up the order"})
-        
+        return Response({"message": "picked up the order"})
+
+
 class DriverFlagDelivered(APIView):
-    def post(self, request,pk,format = None):
-        order = Order.objects.get(pk = pk)
-        serializer = DeliverSeializer(instance=order, data=request.data,context=request.data)
+    def post(self, request, pk, format=None):
+        order = Order.objects.get(pk=pk)
+        serializer = DeliverSeializer(
+            instance=order, data=request.data, context=request.data
+        )
         if serializer.is_valid():
             serializer.save()
-            return Response({"message":"deliverd"})
+            return Response({"message": "deliverd"})
         else:
-            return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
-    
+            return Response(
+                {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+
 class order_test(APIView):
-    def get(self,request,format = None):
+    def get(self, request, format=None):
         # from .tasks import add_product_bought_from_supplier
         # devices = FCMDevice.objects.filter(user__role="DRIVER")
         # if devices:
@@ -197,5 +224,4 @@ class order_test(APIView):
         # # s.user.first_name = 'siham'
         # # s.user.last_name = 'barakat'
         # # s.user.save()
-        return Response({"message":"done"})
-
+        return Response({"message": "done"})

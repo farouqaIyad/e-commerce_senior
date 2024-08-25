@@ -3,7 +3,8 @@ from datetime import datetime
 from decimal import Decimal
 from math import ceil
 from django.db import transaction
-from catalog.models import ProductDetail, ProductColor, Size_Value, Stock, Product
+from inventory.models import ProductDetail, ProductColor, Size_Value, Stock, Product
+
 from rest_framework.response import Response
 from rest_framework import status
 import ast

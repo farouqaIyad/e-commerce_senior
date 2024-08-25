@@ -34,9 +34,9 @@ class CustomerSignupAPIView(APIView):
                     customer_profile = CustomerProfile.objects.create(
                         user=user, phone_number=request.data["phone_number"]
                     )
-                    device = FCMDevice.objects.update_or_create(
-                        registration_id=request.data["fcm_token"], user=user
-                    )
+                    # device = FCMDevice.objects.update_or_create(
+                    #     registration_id=request.data["fcm_token"], user=user
+                    # )
                     token = RefreshToken.for_user(user)
                     return Response(
                         {

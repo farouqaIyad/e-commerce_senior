@@ -1,27 +1,15 @@
 from .models import (
-    Product,
     Category,
-    ProductType,
-    ProductDetail,
     ProductColor,
     ProductSize,
     Size_Value,
-    ProductImage,
     ProductAttribute,
-    ProductAttributeValues,
-    ProductTypeAttributes,
-    Stock,
     Brand,
     CategoriesBrand,
+    ProductCategoryAttributes,
 )
-from django.conf import settings
-from django.db.models import Prefetch
-from user_feedback.serializers import ReviewSerializer
 from rest_framework import serializers
-from django.db.models import Avg
 from django.db import models
-from supplier.models import SupplierProfile
-from django.contrib.sites.models import Site
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -45,22 +33,6 @@ class CategorySerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "is_leaf", "slug"]
 
 
-class ProductTypeSerializer(serializers.ModelSerializer):
-    product_size = models.ForeignKey(ProductSize, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-
-    def create(self, validated_data):
-        validated_data["product_size"] = self.context.get("product_size")
-        validated_data["category"] = self.context.get("category")
-
-        return super().create(validated_data)
-
-    class Meta:
-        model = ProductType
-        fields = ["id", "name", "product_size"]
-        depth = 1
-
-
 class ProductSizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductSize
@@ -82,170 +54,15 @@ class ProductColorSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProductRegisterSerializer(serializers.ModelSerializer):
-    uploaded_images = serializers.ListField(
-        child=serializers.ImageField(
-            max_length=1000, allow_empty_file=False, use_url=False
-        ),
-        write_only=True,
-    )
-    supplier = models.ForeignKey(SupplierProfile, on_delete=models.CASCADE)
-    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
-
-    def create(self, validated_data):
-        validated_data["supplier"] = self.context.get("supplier")
-        validated_data["category"] = self.context.get("category")
-        validated_data["product_type"] = self.context.get("product_type")
-        uploaded_images = validated_data.pop("uploaded_images")
-        product = super().create(validated_data)
-        boolean = True
-        for image in uploaded_images:
-            ProductImage.objects.create(
-                image_url=image, product=product, is_main=boolean
-            )
-            boolean = False
-        return product
-
-    class Meta:
-        model = Product
-        fields = ["name", "description", "category", "product_type", "uploaded_images"]
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    in_wishlist = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = Product
-        fields = [
-            "id",
-            "name",
-            "slug",
-            "main_price",
-            "main_sale_price",
-            "average_rating",
-            "reviews_count",
-            "main_image",
-            "in_wishlist",
-        ]
-
-
-class ProductDetailSerializer(serializers.ModelSerializer):
-    color = serializers.StringRelatedField()
-    size = serializers.StringRelatedField()
-
-    class Meta:
-        model = ProductDetail
-        fields = [
-            "id",
-            "color",
-            "size",
-            "sku",
-            "price",
-            "sale_price",
-            "is_active",
-            "is_main",
-        ]
-
-
-class ProductImageSerializer(serializers.ModelSerializer):
-    image_url = serializers.SerializerMethodField()
-
-    def get_image_url(self, obj):
-        return "http://%s%s%s" % (
-            Site.objects.get_current().domain,
-            settings.MEDIA_URL,
-            obj.image_url,
-        )
-
-    class Meta:
-        model = ProductImage
-        fields = ["image_url"]
-
-
-class ProductWithReviewsSerializer(serializers.ModelSerializer):
-    product_detail = ProductDetailSerializer(read_only=True, many=True)
-    review_set = ReviewSerializer(read_only=True, many=True)
-    images = ProductImageSerializer(read_only=True, many=True)
-    in_wishlist = serializers.BooleanField(read_only=True)
-
-    @staticmethod
-    def setup_eager_loading(queryset):
-        queryset = queryset.prefetch_related(
-            "review_set",
-            "product_detail",
-            Prefetch(
-                "product_detail__color",
-                queryset=ProductColor.objects.all(),  # Or filter if needed
-            ),
-            Prefetch(
-                "product_detail__size",
-                queryset=Size_Value.objects.all(),  # Or filter if needed
-            ),
-            "images",
-        )
-        return queryset
-
-    class Meta:
-        model = Product
-        fields = [
-            "id",
-            "name",
-            "slug",
-            "description",
-            "main_price",
-            "main_sale_price",
-            "average_rating",
-            "reviews_count",
-            "main_image",
-            "product_detail",
-            "review_set",
-            "images",
-            "in_wishlist",
-        ]
-
-
-class StockSerializer(serializers.ModelSerializer):
-    product_detail = ProductDetailSerializer(read_only=True)
-
-    def update(self, instance, validated_data):
-
-        product_data = {}
-        if "color" in self.context:
-            if self.context.get("color"):
-                product_data["color"] = self.context.get("color")
-        if "size" in self.context:
-            if self.context.get("size"):
-                product_data["size"] = self.context.get("size")
-        if "price" in self.context:
-            if self.context.get("price"):
-                product_data["price"] = self.context.get("price")
-        if "is_active" in self.context:
-            if not self.context.get("is_active"):
-                product_data["is_active"] = self.context.get("is_active")
-        if product_data:
-            ProductDetail.objects.filter(stock=instance).update(**product_data)
-
-        if "quantity_in_stock" in validated_data:
-            if validated_data.pop("quantity_in_stock"):
-                instance.quantity_in_stock = validated_data.pop("quantity_in_stock")
-            instance.save()
-        return instance
-
-    class Meta:
-        model = Stock
-        fields = ["id", "product_detail", "quantity_in_stock", "products_sold"]
-        read_only_fields = ["id", "product_detail", "products_sold"]
-
-
 class ProductAttributeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductAttribute
-        fields = ["id", "name"]
+        fields = ["name"]
 
 
-class ProductTypeAttributesSerializer(serializers.ModelSerializer):
-    product_type = models.ForeignKey(ProductType, on_delete=models.CASCADE)
+class ProductCategoryAttributesSerializer(serializers.ModelSerializer):
+    product_type = models.ForeignKey(Category, on_delete=models.CASCADE)
     attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
 
     def create(self, validated_data):
@@ -254,47 +71,8 @@ class ProductTypeAttributesSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     class Meta:
-        model = ProductTypeAttributes
+        model = ProductCategoryAttributes
         fields = "__all__"
-
-
-class ProductAttributesvaluesSerializer(serializers.ModelSerializer):
-    product_attr = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-
-    def create(self, validated_data):
-        validated_data["product_attr"] = self.context.get("product_attr")
-        validated_data["product"] = self.context.get("product")
-        return super().create(validated_data)
-
-    class Meta:
-        model = ProductAttributeValues
-        fields = "__all__"
-
-
-class UndetailedProductSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Product
-        fields = [
-            "name",
-            "slug",
-            "average_rating",
-            "reviews_count",
-            "main_image",
-            "supplier",
-        ]
-
-
-class OrderProductSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Product
-        fields = [
-            "name",
-            "slug",
-            "main_image",
-        ]
 
 
 class BrandSerializer(serializers.ModelSerializer):

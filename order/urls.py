@@ -1,5 +1,16 @@
 from django.urls import path
-from .views import AddressList, AddressDetail, OrderList, OrderDetail, DriverOrderList,DriverOrderDetail,DriverFlagPickedUp,order_test,MyOrders,DriverFlagDelivered
+from .views import (
+    AddressList,
+    AddressDetail,
+    OrderList,
+    OrderDetail,
+    DriverOrderList,
+    DriverOrderDetail,
+    DriverFlagPickedUp,
+    order_test,
+    MyOrders,
+    DriverFlagDelivered,
+)
 
 urlpatterns = [
     path("address/", AddressList.as_view()),
@@ -11,6 +22,5 @@ urlpatterns = [
     path("order_accept/<int:pk>", DriverFlagPickedUp.as_view()),
     path("order_deliver/<int:pk>", DriverFlagDelivered.as_view()),
     path("order_test/", order_test.as_view()),
-    path("my_order/",MyOrders.as_view())
-
+    path("my_order/", MyOrders.as_view()),
 ]

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from catalog.serializers import UndetailedProductSerializer, ProductDetail
+from inventory.serializers import UndetailedProductSerializer, ProductDetail
 from .models import ShoppingCart, ShoppingCartProducts
 
 

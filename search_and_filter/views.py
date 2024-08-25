@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.pagination import LimitOffsetPagination
-from catalog.serializers import ProductSerializer
-from catalog.models import Product, Stock
+from inventory.serializers import ProductSerializer
+from inventory.models import Product, Stock
 from sentence_transformers import SentenceTransformer
 from pgvector.django import CosineDistance, L2Distance
 from rest_framework.permissions import IsAuthenticated

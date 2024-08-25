@@ -86,9 +86,12 @@ def notifiy_drivers(self):
 @shared_task(bind=True)
 def notifiy_to_leave_review(self):
     from order.models import Order
-    from datetime import datetime,timedelta
+    from datetime import datetime, timedelta
+
     yesterday = datetime.now - timedelta(1)
-    order = Order.objects.filter(order_status = 'Deliverd',date_deliverd__in = datetime.now())
+    order = Order.objects.filter(
+        order_status="Deliverd", date_deliverd__in=datetime.now()
+    )
     devices = FCMDevice.objects.filter(user__role="Customer")
     if devices:
         title = "A New Order is Available"

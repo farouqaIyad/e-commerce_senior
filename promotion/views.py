@@ -7,7 +7,7 @@ from .serializers import (
     PromotionSerializer,
     ProductOnPromotionSerializer,
 )
-from catalog.serializers import ProductSerializer
+from inventory.serializers import ProductSerializer
 from django.db import transaction
 from .models import (
     Coupon,

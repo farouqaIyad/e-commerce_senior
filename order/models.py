@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from supplier.models import SupplierProfile
 from driver.models import DriverProfile
 
+
 class Address(models.Model):
     customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
     address_name = models.CharField(max_length=64, blank=True, null=True)
@@ -23,7 +24,7 @@ class Address(models.Model):
         unique_together = [["customer", "address_name"]]
 
     def __str__(self):
-        return '{}'.format(self.details)
+        return "{}".format(self.details)
 
 
 class Order(models.Model):
@@ -55,10 +56,11 @@ class Order(models.Model):
         ("TRUCK", "Truck"),
     )
     pick_up_method = models.CharField(max_length=9, choices=vehicle_types, blank=False)
-    driver = models.ForeignKey(DriverProfile,on_delete=models.CASCADE,null=True,blank=True)
+    driver = models.ForeignKey(
+        DriverProfile, on_delete=models.CASCADE, null=True, blank=True
+    )
     delivery_image = models.ImageField(upload_to="orders", default="orders/default.png")
 
-    
     class Meta:
         db_table = "order"
 

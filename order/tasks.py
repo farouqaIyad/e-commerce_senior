@@ -1,7 +1,7 @@
 from celery import shared_task
 from .models import ProductBoughtFromSupplier, SupplierProfile, Order, OrderProducts
 from django.db import transaction
-from catalog.models import Stock
+from inventory.models import Stock
 from driver.models import vehicletypecategory
 
 

@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Review, Returnal, ProductDetail, ReturnReason, ReturnMethod
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from catalog.models import Product
+from inventory.models import Product
 from rest_framework import status
 from django.http import Http404
 

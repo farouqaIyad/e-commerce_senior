@@ -8,8 +8,8 @@ class CatalogConfig(AppConfig):
 
     def ready(self):
         from . import signals
-        from .models import Category, Product
+        from .models import Category
 
         request_finished.connect(signals.category_post_save, sender=Category)
         request_finished.connect(signals.category_post_delete, sender=Category)
-        request_finished.connect(signals.product_post_save, sender=Product)
+        # request_finished.connect(signals.product_post_save, sender=Product)

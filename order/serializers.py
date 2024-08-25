@@ -1,10 +1,11 @@
 from .models import Order, Address, CustomerProfile, OrderProducts, ShoppingCart
 from wishlist_cart.serializers import WishlistSerializer
-from supplier.serializers import SupplierProfile,OrderSupplierSerializer
+from supplier.serializers import SupplierProfile, OrderSupplierSerializer
 from rest_framework import serializers
-from catalog.models import Product
+from inventory.models import Product
 from django.db import models
 from .distance_alg import calculate_shortest_distance
+
 
 class AddressSerializer(serializers.ModelSerializer):
     customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
@@ -105,60 +106,54 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "date_deliverd",
             "order_status",
             "order",
-            'pick_up_method'
+            "pick_up_method",
         ]
         read_only_fields = ("date_created", "date_deliverd", "order_status", "cart")
-
 
 
 class DriverOrderSerializer(serializers.ModelSerializer):
     order_address = serializers.StringRelatedField()
     distance = serializers.SerializerMethodField()
 
-    def get_distance(self, obj):  
+    def get_distance(self, obj):
         if obj.order_address.longitude != 0:
             products = obj.order.values_list("products")
             suppliers = SupplierProfile.objects.filter(
                 product__product_detail__in=products
             ).distinct()
             locations = {}
-            locations['start'] = (self.context.get('long'),self.context.get('lat'))
-            locations['end'] = ( obj.order_address.longitude,obj.order_address.latitude)
+            locations["start"] = (self.context.get("long"), self.context.get("lat"))
+            locations["end"] = (obj.order_address.longitude, obj.order_address.latitude)
             for supplier in suppliers:
-                locations[supplier] = (supplier.longitude,supplier.latitude,)
-            
+                locations[supplier] = (
+                    supplier.longitude,
+                    supplier.latitude,
+                )
+
             distance = calculate_shortest_distance(locations)
             return distance
         else:
             return None
 
-
     class Meta:
         model = Order
-        fields = [
-            'id',
-            'date_created',
-            'order_address',
-            'distance',
-            "order_status"
-        ]
-
+        fields = ["id", "date_created", "order_address", "distance", "order_status"]
 
 
 class DriverDetailedOrderSerializer(serializers.ModelSerializer):
     supplier_location = serializers.SerializerMethodField()
-    order_address = AddressSerializer(read_only = True)
-    order = OrderProductsSerializer(many = True)
+    order_address = AddressSerializer(read_only=True)
+    order = OrderProductsSerializer(many=True)
 
-    def get_supplier_location(self, obj):  
+    def get_supplier_location(self, obj):
         products = obj.order.values_list("products")
         suppliers = SupplierProfile.objects.filter(
             product__product_detail__in=products
         ).distinct()
-        serializer = OrderSupplierSerializer(instance=suppliers,many = True)
+        serializer = OrderSupplierSerializer(instance=suppliers, many=True)
 
         return serializer.data
-    
+
     def setup_eager_loading(queryset):
         queryset = queryset.prefetch_related(
             "order",
@@ -166,23 +161,19 @@ class DriverDetailedOrderSerializer(serializers.ModelSerializer):
             "order__products__size",
             "order__products__color",
             "order__products__product",
-            
         ).select_related("order_address")
         return queryset
-    
+
     class Meta:
         model = Order
         fields = [
-            'id',
-            'date_created',
-            'order_address',
-            'order_status',
-            'supplier_location',
-            'order'
+            "id",
+            "date_created",
+            "order_address",
+            "order_status",
+            "supplier_location",
+            "order",
         ]
-
-
-    
 
 
 class DeliverSeializer(serializers.ModelSerializer):
@@ -190,8 +181,4 @@ class DeliverSeializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = [
-            'order_status',
-            'date_deliverd',
-            'delivery_image'
-        ]
+        fields = ["order_status", "date_deliverd", "delivery_image"]

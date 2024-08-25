@@ -1,4 +1,4 @@
-from catalog.models import Product, ProductDetail, Stock
+from inventory.models import Product, ProductDetail, Stock
 from Users.models import CustomerProfile
 from .utils import validate_rating
 from django.utils import timezone

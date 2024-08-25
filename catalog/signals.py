@@ -1,6 +1,6 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from .models import Category, Product
+from .models import Category
 
 
 @receiver(post_save, sender=Category)
@@ -22,10 +22,10 @@ def category_post_delete(sender, instance, **kwargs):
         print("deleted the children categories")
 
 
-@receiver(post_save, sender=Product)
-def product_post_save(sender, instance, created, **kwargs):
-    if not created and not instance.is_active:
-        product_details = instance.product_d_set.all()
-        for sub_product in product_details:
-            sub_product.is_active = False
-            sub_product.save()
+# @receiver(post_save, sender=Product)
+# def product_post_save(sender, instance, created, **kwargs):
+#     if not created and not instance.is_active:
+#         product_details = instance.product_d_set.all()
+#         for sub_product in product_details:
+#             sub_product.is_active = False
+#             sub_product.save()

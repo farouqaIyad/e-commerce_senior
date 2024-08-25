@@ -10,7 +10,10 @@ from .serializers import (
     ShoppingCartProductsSerializer,
 )
 from .models import ShoppingCartProducts, ShoppingCart
-from catalog.models import Stock
+from inventory.models import Stock
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie, vary_on_headers
 
 
 class WishlistList(APIView):
@@ -37,6 +40,8 @@ class WishlistList(APIView):
             {"message": "added to wishlist"}, status=status.HTTP_201_CREATED
         )
 
+    @method_decorator(cache_page(60 * 60 * 2))
+    @method_decorator(vary_on_headers("Authorization"))
     def get(self, request, format=None):
         user_wishlist = request.user.customerprofile.wishlist
         products_qs = WishlistSerializer.setup_eager_loading(user_wishlist.product)

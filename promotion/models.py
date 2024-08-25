@@ -2,7 +2,7 @@ from typing import Iterable
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from catalog.models import Product, ProductDetail
+from inventory.models import Product, ProductDetail
 from Users.models import User, CustomerProfile
 from supplier.models import SupplierProfile
 

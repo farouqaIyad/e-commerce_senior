@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from permissions import IsAdminOrReadOnly, IsSupplierOrReadOnly
-from catalog.serializers import ProductSerializer
+from inventory.serializers import ProductSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 
 
@@ -45,8 +45,9 @@ class SupplierSignupAPIView(APIView):
 
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
         except:
-            print(user_serializer.errors)
-            return Response({"message":user_serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class SupplierList(APIView):

@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "supplier",
     "driver",
     "notifications",
+    "inventory",
     # external applications
     "rest_framework_simplejwt",
     "corsheaders",
@@ -182,9 +183,9 @@ WSGI_APPLICATION = "e_commerce.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "postgres",
+        "NAME": "e-commerce1",
         "USER": "postgres",
-        "PASSWORD": "postgres",
+        "PASSWORD": "farouq2000",
         "HOST": "localhost",
         "PORT": "5432",
     }

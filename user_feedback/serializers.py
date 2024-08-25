@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from .models import Review, Returnal, ReturnMethod, ReturnReason
-from catalog.models import Product
+from inventory.models import Product
 from Users.models import User
 from django.db import models
 
